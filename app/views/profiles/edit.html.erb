@@ -1,0 +1,30 @@
+<h1>Редактирование профиля</h1>
+
+<%= form_with model: @profile, url: profile_path, method: :patch, local: true, multipart: true do |f| %>
+
+  <div>
+    <%= f.label :avatar, "Аватар" %><br>
+    <%= f.file_field :avatar %>
+  </div>
+
+  <% if @profile.avatar.attached? %>
+    <div>
+      <%= image_tag @profile.avatar.variant(resize_to_limit: [150, 150]) %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :bio, "О себе" %><br>
+    <%= f.text_area :bio, rows: 5 %>
+  </div>
+
+  <div>
+    <%= f.label :private, "Закрытый профиль" %>
+    <%= f.check_box :private %>
+  </div>
+
+  <div>
+    <%= f.submit "Сохранить" %>
+  </div>
+
+<% end %>

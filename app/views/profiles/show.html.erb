@@ -1,0 +1,26 @@
+<h1>Профиль</h1>
+
+<% if @profile.avatar.attached? %>
+  <%= image_tag @profile.avatar, width: 150 %>
+<% else %>
+  <p>Аватар не загружен</p>
+<% end %>
+
+
+<p><strong>Email:</strong> <%= current_user.email %></p>
+
+<p>
+  <strong>О себе:</strong><br>
+  <%= @profile.bio.presence || "Пока ничего не указано" %>
+</p>
+
+<p>
+  <strong>Приватность:</strong>
+  <%= @profile.private? ? "Закрытый профиль" : "Открытый профиль" %>
+</p>
+
+<hr>
+
+<%= link_to "Редактировать профиль", edit_profile_path %><br>
+<%= link_to "Сменить пароль", edit_user_registration_path %><br>
+<%= button_to "Выйти", destroy_user_session_path, method: :delete %>
