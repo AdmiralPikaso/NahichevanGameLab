@@ -1,0 +1,8 @@
+<h1>Добро пожаловать</h1>
+
+<% if user_signed_in? %>
+  <%= link_to "Мой профиль", profile_path %>
+<% else %>
+  <%= link_to "Войти", new_user_session_path %><br>
+  <%= link_to "Регистрация", new_user_registration_path %>
+<% end %>

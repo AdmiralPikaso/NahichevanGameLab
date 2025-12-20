@@ -1,0 +1,22 @@
+<h1>Пользователи</h1>
+
+<ul>
+  <% @profiles.each do |profile| %>
+    <li>
+      <%= link_to profile.user.email, profile_path(profile) %>
+      <% if profile.private? %>
+        (закрытый профиль)
+      <% end %>
+    </li>
+  <% end %>
+</ul>
+
+<hr>
+
+<div style="margin-top: 20px;">
+  <%= link_to "Мой профиль", my_profile_path %>
+</div>
+
+
+
+

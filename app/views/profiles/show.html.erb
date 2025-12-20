@@ -1,4 +1,4 @@
-<h1>Профиль</h1>
+<h1>Профиль пользователя</h1>
 
 <% if @profile.avatar.attached? %>
   <%= image_tag @profile.avatar, width: 150 %>
@@ -6,8 +6,7 @@
   <p>Аватар не загружен</p>
 <% end %>
 
-
-<p><strong>Email:</strong> <%= current_user.email %></p>
+<p><strong>Email:</strong> <%= @profile.user.email %></p>
 
 <p>
   <strong>О себе:</strong><br>
@@ -21,6 +20,19 @@
 
 <hr>
 
-<%= link_to "Редактировать профиль", edit_profile_path %><br>
-<%= link_to "Сменить пароль", edit_user_registration_path %><br>
-<%= button_to "Выйти", destroy_user_session_path, method: :delete %>
+<!-- ===== НАВИГАЦИЯ ВНИЗУ ===== -->
+<div style="margin-top: 20px;">
+  <%= link_to "Пользователи", profiles_path %> |
+
+  <% if @profile == current_user.profile %>
+    <%= link_to "Редактировать профиль", edit_my_profile_path %> |
+    <%= button_to "Выйти", destroy_user_session_path, method: :delete %>
+  <% else %>
+    <%= link_to "Мой профиль", my_profile_path %>
+  <% end %>
+</div>
+
+
+
+
+
