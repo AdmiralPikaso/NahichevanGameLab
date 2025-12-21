@@ -1,15 +1,94 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>NachichevanGameLab</title>
+    <title>NahichevanGameLab</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+    
+    <!-- Bootstrap для красивого меню (опционально) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      /* Простые стили для меню */
+      .main-nav {
+        background: #2c3e50;
+        padding: 10px 20px;
+        margin-bottom: 20px;
+      }
+      .main-nav a {
+        color: white;
+        text-decoration: none;
+        margin-right: 15px;
+        padding: 8px 12px;
+        display: inline-block;
+      }
+      .main-nav a:hover {
+        background: #3498db;
+        border-radius: 4px;
+      }
+      .user-info {
+        float: right;
+        color: white;
+      }
+      .container {
+        padding: 0 20px;
+      }
+      .flash-notice {
+        background: #d4edda;
+        color: #155724;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .flash-alert {
+        background: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+    </style>
   </head>
 
   <body>
-    <%= yield %>
+    <!-- НАВИГАЦИОННОЕ МЕНЮ -->
+    <div class="main-nav">
+      <!-- Лого/название -->
+      <%= link_to "🎮 GameHub", root_path %>
+      
+      <!-- Основные ссылки -->
+      <%= link_to "Все игры", games_path %>
+      <%= link_to "Добавить игру", new_game_path %>
+      <%= link_to "Пользователи", profiles_path %>
+      
+      <!-- Пользовательские ссылки (правая часть) -->
+      <div class="user-info">
+        <% if user_signed_in? %>
+          Привет, <%= current_user.email %>!
+          <%= link_to "Мой профиль", my_profile_path %>
+          <%= link_to "Выйти", destroy_user_session_path, method: :delete %>
+        <% else %>
+          <%= link_to "Войти", new_user_session_path %>
+          <%= link_to "Регистрация", new_user_registration_path %>
+        <% end %>
+      </div>
+    </div>
+    
+    <!-- Уведомления -->
+    <% if notice %>
+      <div class="flash-notice"><%= notice %></div>
+    <% end %>
+    
+    <% if alert %>
+      <div class="flash-alert"><%= alert %></div>
+    <% end %>
+    
+    <!-- Основной контент страницы -->
+    <div class="container">
+      <%= yield %>
+    </div>
+    
+    <!-- Bootstrap JS (если используешь Bootstrap компоненты) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
-
-
