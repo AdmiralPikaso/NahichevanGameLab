@@ -1,0 +1,32 @@
+<%= form_with(model: [@game, review], local: true) do |form| %>
+  <% if review.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(review.errors.count, "error") %> prohibited this review from being saved:</h4>
+      <ul>
+        <% review.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :title, "Заголовок", class: "form-label" %>
+    <%= form.text_field :title, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :rating, "Оценка (1-10)", class: "form-label" %>
+    <%= form.number_field :rating, in: 1..10, class: "form-control", required: true %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :content, "Содержание рецензии", class: "form-label" %>
+    <%= form.text_area :content, rows: 10, class: "form-control", required: true %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit review.persisted? ? "Обновить рецензию" : "Создать рецензию", class: "btn btn-primary" %>
+    <%= link_to 'Отмена', review.persisted? ? review_path(review) : game_path(@game), class: 'btn btn-secondary' %>
+  </div>
+<% end %>

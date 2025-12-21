@@ -4,6 +4,13 @@
     <div>
       <%= link_to "← Все игры", games_path, class: "btn btn-outline-secondary" %>
       <%= link_to "✏️ Редактировать", edit_game_path(@game), class: "btn btn-outline-primary" %>
+      <% if user_signed_in? %>
+        <% if @game.reviewed_by?(current_user) %>
+          <%= link_to "📝 Моя рецензия", edit_review_path(@game.user_review(current_user)), class: "btn btn-outline-warning" %>
+        <% else %>
+          <%= link_to "📝 Написать рецензию", new_game_review_path(@game), class: "btn btn-outline-success" %>
+        <% end %>
+      <% end %>
       <%= link_to "🗑️ Удалить", @game, 
           method: :delete, 
           class: "btn btn-outline-danger",
@@ -50,6 +57,66 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="row mt-5">
+    <div class="col-12">
+      <h3 class="mb-4">📝 Рецензии пользователей</h3>
+      
+      <% if user_signed_in? %>
+        <div class="mb-4">
+          <% if @game.reviewed_by?(current_user) %>
+            <%= link_to "✏️ Редактировать мою рецензию", edit_review_path(@game.user_review(current_user)), 
+                class: "btn btn-warning" %>
+          <% else %>
+            <%= link_to "➕ Написать рецензию", new_game_review_path(@game), 
+                class: "btn btn-primary" %>
+          <% end %>
+          <%= link_to "👁️ Все рецензии (#{@game.reviews.count})", game_reviews_path(@game), 
+              class: "btn btn-outline-secondary" %>
+        </div>
+      <% end %>
+      
+      <% if @game.reviews.any? %>
+        <% @game.reviews.order(created_at: :desc).limit(3).each do |review| %>
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h5><%= review.title %></h5>
+                  <p class="text-muted small mb-2">
+                    <%= review.user.email %> • <%= review.created_at.strftime("%d.%m.%Y") %>
+                  </p>
+                </div>
+                <div class="text-end">
+                  <span class="badge bg-warning fs-6"><%= review.rating %>/10</span>
+                  <div class="mt-2">
+                    <span class="text-muted small">
+                      <i class="bi bi-heart"></i> <%= review.likes.count %>
+                      <i class="bi bi-chat ms-2"></i> <%= review.comments.count %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p><%= truncate(review.content, length: 300) %></p>
+              <%= link_to "Читать полностью →", review_path(review), 
+                  class: "btn btn-sm btn-outline-primary" %>
+            </div>
+          </div>
+        <% end %>
+        
+        <% if @game.reviews.count > 3 %>
+          <div class="text-center mt-3">
+            <%= link_to "Показать все рецензии (#{@game.reviews.count})", game_reviews_path(@game), 
+                class: "btn btn-outline-secondary" %>
+          </div>
+        <% end %>
+      <% else %>
+        <div class="alert alert-info">
+          <p>Пока нет рецензий на эту игру. <% if user_signed_in? %>Будьте первым!<% else %>Войдите, чтобы написать первую.<% end %></p>
+        </div>
+      <% end %>
     </div>
   </div>
 </div>

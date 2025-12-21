@@ -1,0 +1,116 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+      <h1><%= @review.title %></h1>
+      <p class="text-muted">
+        Рецензия на игру: <%= link_to @review.game.title, @review.game %>
+      </p>
+    </div>
+    <div>
+      <%= link_to "← Все рецензии", game_reviews_path(@review.game), class: "btn btn-outline-secondary" %>
+      <% if @review.user == current_user %>
+        <%= link_to "✏️ Редактировать", edit_review_path(@review), class: "btn btn-outline-primary" %>
+      <% end %>
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h5 class="card-title">Автор: <%= @review.user.email %></h5>
+              <p class="text-muted small">
+                <%= @review.created_at.strftime("%d.%m.%Y") %>
+              </p>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-warning fs-5"><%= @review.rating %>/10</span>
+              <div class="mt-2">
+                <% if user_signed_in? %>
+                  <% if @review.liked_by?(current_user) %>
+                    <% like = @review.likes.find_by(user: current_user) %>
+                    <%= button_to like_path(like), 
+                        method: :delete,
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { style: "display: inline;" } do %>
+                      <i class="bi bi-heart-fill"></i> <%= @review.likes.count %>
+                    <% end %>
+                  <% else %>
+                    <%= button_to review_likes_path(@review),
+                        method: :post,
+                        class: "btn btn-sm btn-outline-danger",
+                        form: { style: "display: inline;" } do %>
+                      <i class="bi bi-heart"></i> <%= @review.likes.count %>
+                    <% end %>
+                  <% end %>
+                <% else %>
+                  <span class="btn btn-sm btn-outline-secondary disabled">
+                    <i class="bi bi-heart"></i> <%= @review.likes.count %>
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+          
+          <div class="review-content">
+            <%= simple_format(@review.content) %>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5 class="card-title">Комментарии (<%= @comments.count %>)</h5>
+          
+          <% @comments.each do |comment| %>
+            <div class="comment-card mb-3">
+                <div class="d-flex justify-content-between">
+                    <strong><%= comment.user.email %></strong>
+                    <small class="text-muted"><%= comment.created_at.strftime("%d.%m.%Y %H:%M") %></small>
+                </div>
+                <p class="mb-1"><%= comment.content %></p>
+                <% if comment.user == current_user %>
+                    <small>
+                        <%= button_to "Удалить", comment_path(comment), 
+                        method: :delete,
+                        data: { confirm: "Удалить комментарий?" },
+                        class: "btn btn-sm btn-outline-danger", 
+                        form: { style: "display: inline;" } %>
+                    </small>
+                <% end %>
+            </div>
+        <% end %>
+          <% if user_signed_in? %>
+            <%= form_with(model: [@review, @comment], url: review_comments_path(@review), local: true) do |form| %>
+              <div class="mb-3">
+                <%= form.text_area :content, rows: 3, class: "form-control", placeholder: "Напишите комментарий...", required: true %>
+              </div>
+              <%= form.submit "Отправить", class: "btn btn-primary btn-sm" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Об игре</h5>
+          <% if @review.game.cover_url.present? %>
+            <img src="<%= @review.game.cover_url %>" class="img-fluid mb-3 rounded" alt="<%= @review.game.title %>">
+          <% end %>
+          <h6><%= @review.game.title %></h6>
+          <p class="text-muted small">
+            <%= @review.game.release_date.strftime("%d.%m.%Y") %>
+            <% if @review.game.metacritic_score.present? %>
+              <br>Metacritic: <%= @review.game.metacritic_score %>/100
+            <% end %>
+          </p>
+          <%= link_to "Перейти к игре →", @review.game, class: "btn btn-outline-primary btn-sm" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
