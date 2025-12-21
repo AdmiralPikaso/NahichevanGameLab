@@ -1,0 +1,78 @@
+<%= form_with(model: game, local: true, html: { class: "needs-validation" }) do |form| %>
+  <% if game.errors.any? %>
+    <div class="alert alert-danger">
+      <h4 class="alert-heading"><%= pluralize(game.errors.count, "error") %> не позволяет сохранить игру:</h4>
+      <ul class="mb-0">
+        <% game.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :title, "Название игры*", class: "form-label" %>
+    <%= form.text_field :title, class: "form-control", required: true, placeholder: "The Witcher 3: Wild Hunt" %>
+    <div class="form-text">Название должно быть уникальным</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :description, "Описание игры", class: "form-label" %>
+    <%= form.text_area :description, class: "form-control", rows: 6, 
+          placeholder: "Опишите сюжет, геймплей, особенности игры..." %>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <%= form.label :release_date, "Дата выхода*", class: "form-label" %>
+      <%= form.date_field :release_date, class: "form-control", required: true %>
+    </div>
+    
+    <div class="col-md-6 mb-3">
+      <%= form.label :metacritic_score, "Рейтинг Metacritic", class: "form-label" %>
+      <%= form.number_field :metacritic_score, 
+            class: "form-control", 
+            min: 0, 
+            max: 100,
+            placeholder: "0-100" %>
+      <div class="form-text">Оставьте пустым, если нет рейтинга</div>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :cover_url, "Ссылка на обложку", class: "form-label" %>
+    <%= form.text_field :cover_url, 
+          class: "form-control", 
+          placeholder: "https://example.com/game-cover.jpg" %>
+    <div class="form-text">Рекомендуемый размер: 300x400px</div>
+    
+    <% if game.cover_url.present? %>
+      <div class="mt-2">
+        <strong>Текущая обложка:</strong><br>
+        <img src="<%= game.cover_url %>" 
+             alt="Обложка" 
+             class="img-thumbnail mt-2" 
+             style="max-height: 150px;">
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :developer_ids, "Разработчики", class: "form-label" %>
+    <%= form.collection_select :developer_ids, 
+          Developer.all,           # Все разработчики из БД
+          :id,                     # Что сохраняем (ID)
+          :name,                   # Что показываем (название)
+          { include_blank: "Выберите разработчиков..." }, 
+          { multiple: true, class: "form-select", size: 4 } %>
+    <div class="form-text">
+      Удерживайте Ctrl (Cmd на Mac) для выбора нескольких
+    </div>
+  </div>
+
+  <div class="mt-4">
+    <%= form.submit game.persisted? ? "💾 Обновить игру" : "🎮 Создать игру", 
+          class: "btn btn-primary me-2" %>
+    <%= link_to "❌ Отмена", games_path, class: "btn btn-outline-secondary" %>
+  </div>
+<% end %>

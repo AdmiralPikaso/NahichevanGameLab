@@ -1,0 +1,14 @@
+<div class="container mt-4">
+  <h1>✏️ Редактировать игру: <span class="text-primary"><%= @game.title %></span></h1>
+  
+  <div class="card mt-3">
+    <div class="card-body">
+      <%= render 'form', game: @game %>
+    </div>
+  </div>
+  
+  <div class="mt-3">
+    <%= link_to "👁️ Показать игру", @game, class: "btn btn-outline-info me-2" %>
+    <%= link_to "← Все игры", games_path, class: "btn btn-link" %>
+  </div>
+</div>

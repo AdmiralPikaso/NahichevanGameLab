@@ -1,0 +1,61 @@
+<h1>🎮 Каталог игр</h1>
+
+<%= link_to "➕ Добавить новую игру", new_game_path, class: "btn btn-primary" %>
+
+<% if @games.any? %>
+  <div class="games-list mt-4">
+    <% @games.each do |game| %>
+      <div class="card mb-3">
+        <div class="row g-0">
+          <% if game.cover_url.present? %>
+            <div class="col-md-3">
+              <img src="<%= game.cover_url %>" 
+                   alt="<%= game.title %>" 
+                   class="img-fluid rounded-start"
+                   style="max-height: 200px; object-fit: cover;">
+            </div>
+          <% end %>
+          
+          <div class="<%= game.cover_url.present? ? 'col-md-9' : 'col-12' %>">
+            <div class="card-body">
+              <h5 class="card-title">
+                <%= link_to game.title, game %>
+                <% if game.metacritic_score.present? %>
+                  <span class="badge bg-<%= game.metacritic_score >= 75 ? 'success' : game.metacritic_score >= 50 ? 'warning' : 'danger' %> ms-2">
+                    <%= game.metacritic_score %>
+                  </span>
+                <% end %>
+              </h5>
+              
+              <p class="card-text">
+                <small class="text-muted">
+                  📅 <%= game.release_date %>
+                  <% if game.developers.any? %>
+                    | 👨‍💻 <%= game.developer_names %>
+                  <% end %>
+                </small>
+              </p>
+              
+              <% if game.description.present? %>
+                <p class="card-text"><%= truncate(game.description, length: 150) %></p>
+              <% end %>
+              
+              <div class="mt-2">
+                <%= link_to "👁️ Просмотр", game, class: "btn btn-sm btn-outline-primary" %>
+                <%= link_to "✏️ Редактировать", edit_game_path(game), class: "btn btn-sm btn-outline-secondary" %>
+                <%= link_to "🗑️ Удалить", game, 
+                    method: :delete, 
+                    class: "btn btn-sm btn-outline-danger",
+                    data: { confirm: "Удалить игру '#{game.title}'?" } %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="alert alert-info mt-4">
+    <p>Игр пока нет. <%= link_to "Добавьте первую!", new_game_path %></p>
+  </div>
+<% end %>

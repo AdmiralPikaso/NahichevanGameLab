@@ -1,0 +1,55 @@
+<div class="game-show">
+  <div class="d-flex justify-content-between align-items-start">
+    <h1><%= @game.title %></h1>
+    <div>
+      <%= link_to "← Все игры", games_path, class: "btn btn-outline-secondary" %>
+      <%= link_to "✏️ Редактировать", edit_game_path(@game), class: "btn btn-outline-primary" %>
+      <%= link_to "🗑️ Удалить", @game, 
+          method: :delete, 
+          class: "btn btn-outline-danger",
+          data: { confirm: "Удалить игру '#{@game.title}'?" } %>
+    </div>
+  </div>
+  
+  <div class="row mt-4">
+    <% if @game.cover_url.present? %>
+      <div class="col-md-4">
+        <img src="<%= @game.cover_url %>" 
+             alt="<%= @game.title %>" 
+             class="img-fluid rounded shadow"
+             style="max-height: 400px; object-fit: cover;">
+      </div>
+    <% end %>
+    
+    <div class="<%= @game.cover_url.present? ? 'col-md-8' : 'col-12' %>">
+      <div class="card">
+        <div class="card-body">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>📅 Дата выхода:</strong> <%= @game.release_date %></p>
+            </div>
+            <% if @game.metacritic_score.present? %>
+              <div class="col-md-6">
+                <p>
+                  <strong>⭐ Metacritic:</strong> 
+                  <span class="badge bg-<%= @game.metacritic_score >= 75 ? 'success' : @game.metacritic_score >= 50 ? 'warning' : 'danger' %>">
+                    <%= @game.metacritic_score %>/100
+                  </span>
+                </p>
+              </div>
+            <% end %>
+          </div>
+          
+          <% if @game.developers.any? %>
+            <p><strong>👨‍💻 Разработчики:</strong> <%= @game.developer_names %></p>
+          <% end %>
+          
+          <h5 class="mt-4">📖 Описание</h5>
+          <div class="description-box p-3 bg-light rounded">
+            <%= simple_format(@game.description) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
