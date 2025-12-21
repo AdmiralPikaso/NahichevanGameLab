@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_20_144052) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,15 +42,43 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_144052) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "developers", force: :cascade do |t|
+    t.string "country"
+    t.datetime "created_at", null: false
+    t.integer "founded_year"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_developers_on_name", unique: true
+  end
+
+  create_table "game_developers", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "developer_id"
+    t.bigint "game_id"
+    t.datetime "updated_at", null: false
+    t.index ["developer_id"], name: "index_game_developers_on_developer_id"
+    t.index ["game_id", "developer_id"], name: "index_game_developers_on_game_id_and_developer_id", unique: true
+    t.index ["game_id"], name: "index_game_developers_on_game_id"
+  end
+
+  create_table "games", force: :cascade do |t|
+    t.string "cover_url"
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "metacritic_score"
+    t.date "release_date"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["title"], name: "index_games_on_title", unique: true
+  end
+
   create_table "profiles", force: :cascade do |t|
-    t.references :user, null: false, foreign_key: true
     t.text "bio"
     t.datetime "created_at", null: false
-    t.boolean "private", default:false
+    t.boolean "private"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id"
-    t.timestamps
   end
 
   create_table "users", force: :cascade do |t|
@@ -67,5 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_20_144052) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "game_developers", "developers"
+  add_foreign_key "game_developers", "games"
   add_foreign_key "profiles", "users"
 end
