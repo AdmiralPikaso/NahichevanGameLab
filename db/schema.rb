@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_21_213007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,24 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "collection_games", force: :cascade do |t|
+    t.bigint "collection_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "game_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id"], name: "index_collection_games_on_collection_id"
+    t.index ["game_id"], name: "index_collection_games_on_game_id"
+  end
+
+  create_table "collections", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_collections_on_user_id"
+  end
+
   create_table "developers", force: :cascade do |t|
     t.string "country"
     t.datetime "created_at", null: false
@@ -49,6 +67,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_developers_on_name", unique: true
+  end
+
+  create_table "friendships", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "friend_id", null: false
+    t.string "status", default: "pending"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["friend_id"], name: "index_friendships_on_friend_id"
+    t.index ["user_id", "friend_id"], name: "index_friendships_on_user_id_and_friend_id", unique: true
+    t.index ["user_id"], name: "index_friendships_on_user_id"
   end
 
   create_table "game_developers", force: :cascade do |t|
@@ -75,7 +104,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
   create_table "profiles", force: :cascade do |t|
     t.text "bio"
     t.datetime "created_at", null: false
-    t.boolean "private"
+    t.boolean "private", default: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id"
@@ -93,9 +122,27 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "wishlists", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "game_id", null: false
+    t.text "notes"
+    t.integer "priority"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["game_id"], name: "index_wishlists_on_game_id"
+    t.index ["user_id"], name: "index_wishlists_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "collection_games", "collections"
+  add_foreign_key "collection_games", "games"
+  add_foreign_key "collections", "users"
+  add_foreign_key "friendships", "users"
+  add_foreign_key "friendships", "users", column: "friend_id"
   add_foreign_key "game_developers", "developers"
   add_foreign_key "game_developers", "games"
   add_foreign_key "profiles", "users"
+  add_foreign_key "wishlists", "games"
+  add_foreign_key "wishlists", "users"
 end

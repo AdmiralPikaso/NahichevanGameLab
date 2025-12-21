@@ -1,22 +1,317 @@
-<h1>Пользователи</h1>
-
-<ul>
-  <% @profiles.each do |profile| %>
-    <li>
-      <%= link_to profile.user.email, profile_path(profile) %>
-      <% if profile.private? %>
-        (закрытый профиль)
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Публичные профили</h1>
+    <div>
+      <%= link_to "Все пользователи", users_path, class: "btn btn-outline-primary" %>
+    </div>
+  </div>
+  
+  <!-- Информация -->
+  <div class="alert alert-info mb-4">
+    <div class="d-flex align-items-center">
+      <div class="me-3">
+        <i class="bi bi-people-fill fs-4"></i>
+      </div>
+      <div>
+        <h5 class="alert-heading mb-1">👋 Приветствуем в сообществе!</h5>
+        <p class="mb-0">Здесь отображаются публичные профили пользователей. Вы можете просматривать их коллекции и добавлять в друзья.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Фильтры и поиск -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-8">
+          <%= form_tag profiles_path, method: :get, class: "row g-2" do %>
+            <div class="col-md-9">
+              <%= text_field_tag :search, params[:search], 
+                    class: "form-control", 
+                    placeholder: "Поиск по email, описанию..." %>
+            </div>
+            <div class="col-md-3">
+              <%= submit_tag "Найти", class: "btn btn-primary w-100" %>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-md-4">
+          <div class="d-flex justify-content-end">
+            <%= link_to "Сбросить", profiles_path, class: "btn btn-outline-secondary" %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Быстрые фильтры -->
+      <div class="mt-3">
+        <div class="btn-group btn-group-sm flex-wrap" role="group">
+          <%= link_to "Все", profiles_path, 
+                class: "btn #{params[:filter].blank? ? 'btn-primary' : 'btn-outline-primary'} mb-1" %>
+          <%= link_to "С коллекциями", profiles_path(filter: 'with_collections'), 
+                class: "btn #{params[:filter] == 'with_collections' ? 'btn-primary' : 'btn-outline-primary'} mb-1" %>
+          <%= link_to "Активные", profiles_path(filter: 'active'), 
+                class: "btn #{params[:filter] == 'active' ? 'btn-primary' : 'btn-outline-primary'} mb-1" %>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Статистика -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-primary"><%= @profiles.count %></h3>
+          <p class="card-text text-muted">Публичных профилей</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-success">
+            <%= @profiles.joins(:user).where("users.created_at >= ?", 30.days.ago).count %>
+          </h3>
+          <p class="card-text text-muted">Новых за месяц</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-warning">
+            <%= @profiles.joins(:user => :collections).distinct.count %>
+          </h3>
+          <p class="card-text text-muted">С коллекциями</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-info">
+            <%= @profiles.where.not(bio: [nil, '']).count %>
+          </h3>
+          <p class="card-text text-muted">С описанием</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Список профилей -->
+  <% if @profiles.any? %>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <% @profiles.each do |profile| %>
+        <% user = profile.user %>
+        <% next if user == current_user %> <!-- Пропускаем текущего пользователя -->
+        
+        <div class="col">
+          <div class="card h-100 profile-card">
+            <!-- Бейдж коллекций -->
+            <% if user.collections.any? %>
+              <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-success">
+                  <i class="bi bi-collection"></i> <%= user.collections.count %>
+                </span>
+              </div>
+            <% end %>
+            
+            <div class="card-body">
+              <!-- Аватар и основная информация -->
+              <div class="text-center mb-3">
+                <% if profile.avatar.attached? %>
+                  <%= image_tag profile.avatar.variant(resize: "120x120"), 
+                        class: "rounded-circle border border-3 border-primary",
+                        style: "width: 120px; height: 120px; object-fit: cover;" %>
+                <% else %>
+                  <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center border border-3 border-primary" 
+                       style="width: 120px; height: 120px;">
+                    <span class="text-white display-5"><%= user.email[0].upcase %></span>
+                  </div>
+                <% end %>
+              </div>
+              
+              <h5 class="card-title text-center mb-2">
+                <%= user.email.split('@').first %>
+                <small class="text-muted d-block"><%= user.email.split('@').last %></small>
+              </h5>
+              
+              <!-- Описание -->
+              <% if profile.bio.present? %>
+                <div class="card-text text-center mb-3">
+                  <p class="fst-italic text-muted">
+                    "<%= profile.bio.truncate(80) %>"
+                  </p>
+                </div>
+              <% else %>
+                <p class="card-text text-muted text-center mb-3">
+                  <small><em>Пока нет описания профиля</em></small>
+                </p>
+              <% end %>
+              
+              <!-- Статистика пользователя -->
+              <div class="row text-center mb-3">
+                <div class="col-4">
+                  <div class="fw-bold"><%= user.collections.count %></div>
+                  <small class="text-muted">Коллекций</small>
+                </div>
+                <div class="col-4">
+                  <div class="fw-bold">
+                    <%= user.collections.joins(:games).distinct.count(:game_id) %>
+                  </div>
+                  <small class="text-muted">Игр</small>
+                </div>
+                <div class="col-4">
+                  <div class="fw-bold">
+                    <%= time_ago_in_words(user.created_at).split.first %>
+                  </div>
+                  <small class="text-muted">На сайте</small>
+                </div>
+              </div>
+              
+              <!-- Информация о коллекциях -->
+              <% if user.collections.any? %>
+                <div class="mb-3">
+                  <h6 class="text-muted mb-2">
+                    <i class="bi bi-star-fill text-warning"></i> Популярные коллекции:
+                  </h6>
+                  <div class="d-flex flex-wrap gap-1 justify-content-center">
+                    <% user.collections.limit(3).each do |collection| %>
+                      <span class="badge bg-info text-dark">
+                        <%= collection.name.truncate(12) %>
+                      </span>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+              
+              <!-- Статус дружбы -->
+              <% if Friendship.table_exists? && user != current_user %>
+                <% friendship_status = current_user.friendship_status_with(user) %>
+                <div class="text-center mb-3">
+                  <% case friendship_status %>
+                  <% when :friends %>
+                    <span class="badge bg-success">
+                      <i class="bi bi-check-circle"></i> Друг
+                    </span>
+                  <% when :request_sent %>
+                    <span class="badge bg-warning text-dark">
+                      <i class="bi bi-clock"></i> Заявка отправлена
+                    </span>
+                  <% when :request_received %>
+                    <span class="badge bg-info">
+                      <i class="bi bi-envelope"></i> Прислал заявку
+                    </span>
+                  <% else %>
+                    <span class="badge bg-secondary">
+                      <i class="bi bi-person-plus"></i> Не в друзьях
+                    </span>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+            
+            <!-- Футер карточки -->
+            <div class="card-footer bg-transparent">
+              <div class="d-grid gap-2">
+                <!-- Основные кнопки -->
+                <div class="btn-group" role="group">
+                  <%= link_to "Профиль", profile_path(user), class: "btn btn-outline-primary" %>
+                  <%= link_to "Коллекции", collections_path(user_id: user.id), class: "btn btn-outline-success" %>
+                </div>
+                
+                <!-- Кнопка дружбы -->
+                <% if Friendship.table_exists? && user != current_user %>
+                  <% case friendship_status %>
+                  <% when :friends %>
+                    <%= link_to "Удалить из друзей", 
+                          friendship_path(user), 
+                          method: :delete,
+                          data: { confirm: "Удалить #{user.email} из друзей?" },
+                          class: "btn btn-danger w-100 mt-1" %>
+                  <% when :request_sent %>
+                    <%= link_to "Отменить заявку", 
+                          friendship_path(user), 
+                          method: :delete,
+                          data: { confirm: "Отменить заявку пользователю #{user.email}?" },
+                          class: "btn btn-warning w-100 mt-1" %>
+                  <% when :request_received %>
+                    <div class="btn-group w-100 mt-1" role="group">
+                      <%= link_to "Принять", 
+                            friendship_path(user), 
+                            method: :patch,
+                            class: "btn btn-success" %>
+                      <%= link_to "Отклонить", 
+                            friendship_path(user), 
+                            method: :delete,
+                            class: "btn btn-danger" %>
+                    </div>
+                  <% else %>
+                    <%= link_to "Добавить в друзья", 
+                          friendships_path(friend_id: user.id), 
+                          method: :post,
+                          class: "btn btn-primary w-100 mt-1" %>
+                  <% end %>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
       <% end %>
-    </li>
+    </div>
+    
+    <!-- Пагинация -->
+    <div class="mt-4 text-center">
+      <small class="text-muted">
+        Показано <%= @profiles.count %> из <%= Profile.where(private: false).count %> публичных профилей
+      </small>
+    </div>
+    
+  <% else %>
+    <!-- Если профилей нет -->
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-emoji-frown display-1 text-muted"></i>
+      </div>
+      <h3 class="text-muted mb-3">Профили не найдены</h3>
+      <p class="text-muted mb-4">
+        <%= params[:search].present? ? "По вашему запросу ничего не найдено" : "Пока нет публичных профилей" %>
+      </p>
+      <div class="d-flex justify-content-center gap-2">
+        <%= link_to "Все пользователи", users_path, class: "btn btn-primary" %>
+        <%= link_to "Сбросить фильтры", profiles_path, class: "btn btn-outline-primary" %>
+      </div>
+    </div>
   <% end %>
-</ul>
-
-<hr>
-
-<div style="margin-top: 20px;">
-  <%= link_to "Мой профиль", my_profile_path %>
 </div>
 
+<style>
+.profile-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+}
 
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-color: #4e73df;
+}
 
+.profile-card .card-footer {
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+}
 
+.profile-card .btn-group .btn {
+  border-radius: 0.25rem !important;
+}
+
+.profile-card .btn-group .btn:first-child {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.profile-card .btn-group .btn:last-child {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+</style>

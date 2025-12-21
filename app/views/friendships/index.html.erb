@@ -1,0 +1,94 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Мои друзья</h1>
+    <div>
+      <%= link_to "Заявки в друзья", pending_friendships_path, class: "btn btn-warning" %>
+    </div>
+  </div>
+  
+  <!-- Статистика -->
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2 class="card-title"><%= @friends.count %></h2>
+          <p class="card-text">Друзей</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2 class="card-title"><%= @pending_incoming_count %></h2>
+          <p class="card-text">Входящих заявок</p>
+          <% if @pending_incoming_count > 0 %>
+            <%= link_to "Просмотреть", pending_friendships_path, class: "btn btn-sm btn-warning mt-2" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card text-center">
+        <div class="card-body">
+          <h2 class="card-title"><%= @pending_outgoing_count %></h2>
+          <p class="card-text">Исходящих заявок</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Список друзей -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Список друзей</h5>
+      <%= link_to "Все пользователи", users_path, class: "btn btn-primary btn-sm" %>
+    </div>
+    
+    <div class="card-body">
+      <% if @friends.any? %>
+        <div class="row">
+          <% @friends.each do |friend| %>
+            <div class="col-md-4 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="d-flex align-items-center mb-3">
+                    <% if friend.profile&.avatar&.attached? %>
+                      <%= image_tag friend.profile.avatar.variant(resize: "50x50"), class: "rounded-circle me-3" %>
+                    <% else %>
+                      <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                        <span class="text-white"><%= friend.email[0].upcase %></span>
+                      </div>
+                    <% end %>
+                    <div>
+                      <h6 class="mb-1"><%= friend.email %></h6>
+                      <small class="text-muted">
+                        <%= friend.profile&.bio&.truncate(30) || "Нет описания" %>
+                      </small>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <div class="btn-group w-100">
+                    <%= link_to "Профиль", user_path(friend), class: "btn btn-outline-primary btn-sm" %>
+                    <%= link_to "Написать", "#", class: "btn btn-outline-success btn-sm" %>
+                    <%= link_to "Удалить", 
+                          friendship_path(friend), 
+                          method: :delete,
+                          data: { confirm: "Удалить из друзей?" },
+                          class: "btn btn-outline-danger btn-sm" %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <h5>У вас пока нет друзей</h5>
+          <p class="text-muted">Посмотрите список пользователей, чтобы добавить друзей</p>
+          <%= link_to "Все пользователи", users_path, class: "btn btn-primary" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

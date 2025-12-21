@@ -1,0 +1,41 @@
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="mb-0">Редактирование коллекции</h2>
+        </div>
+        
+        <div class="card-body">
+          <%= form_with(model: @collection, local: true) do |form| %>
+            <% if @collection.errors.any? %>
+              <div class="alert alert-danger">
+                <h5><%= pluralize(@collection.errors.count, "ошибка") %>:</h5>
+                <ul>
+                  <% @collection.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+            
+            <div class="mb-3">
+              <%= form.label :name, "Название коллекции", class: "form-label" %>
+              <%= form.text_field :name, class: "form-control" %>
+            </div>
+            
+            <div class="mb-4">
+              <%= form.label :description, "Описание", class: "form-label" %>
+              <%= form.text_area :description, class: "form-control", rows: 4 %>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <%= link_to "← Назад", collection_path(@collection), class: "btn btn-secondary" %>
+              <%= form.submit "Сохранить изменения", class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
