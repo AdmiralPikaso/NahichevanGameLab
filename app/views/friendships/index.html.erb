@@ -41,7 +41,7 @@
   <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
       <h5 class="mb-0">Список друзей</h5>
-      <%= link_to "Все пользователи", users_path, class: "btn btn-primary btn-sm" %>
+      <%= link_to "Все пользователи", profiles_path, class: "btn btn-primary btn-sm" %>
     </div>
     
     <div class="card-body">
@@ -86,7 +86,7 @@
         <div class="text-center py-4">
           <h5>У вас пока нет друзей</h5>
           <p class="text-muted">Посмотрите список пользователей, чтобы добавить друзей</p>
-          <%= link_to "Все пользователи", users_path, class: "btn btn-primary" %>
+          <%= link_to "Все пользователи", profiles_path, class: "btn btn-primary" %>
         </div>
       <% end %>
     </div>
