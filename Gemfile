@@ -1,7 +1,5 @@
 source "https://rubygems.org"
 
-gem 'io-console', '~> 0.8'
-
 gem 'devise'
 gem "mini_magick"
 
@@ -74,4 +72,3 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
-
