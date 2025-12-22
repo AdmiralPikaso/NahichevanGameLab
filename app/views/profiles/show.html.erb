@@ -1,241 +1,126 @@
 <div class="container">
-  <% if @user && @user.profile %>
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body text-center">
-            <!-- Аватар -->
-            <% if @user.profile.avatar.attached? %>
-              <%= image_tag @user.profile.avatar.variant(resize: "150x150"), 
-                    class: "rounded-circle mb-3",
-                    style: "width: 150px; height: 150px; object-fit: cover;" %>
-            <% else %>
-              <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" 
-                   style="width: 150px; height: 150px;">
-                <span class="text-white display-4"><%= @user.email[0].upcase %></span>
-              </div>
-            <% end %>
-            
-            <!-- Основная информация -->
-            <h4><%= @user.email %></h4>
-            
-            <!-- Статистика -->
-            <div class="row text-center mt-3">
-              <div class="col-6">
-                <h5 class="mb-0"><%= @collections_count %></h5>
-                <small class="text-muted">Коллекций</small>
-              </div>
-              <div class="col-6">
-                <h5 class="mb-0"><%= @games_count %></h5>
-                <small class="text-muted">Игр всего</small>
-              </div>
+  <div class="row">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body text-center">
+
+          <% if @profile.avatar.attached? %>
+            <%= image_tag @profile.avatar.variant(resize: "150x150"),
+              class: "rounded-circle mb-3",
+              style: "width:150px;height:150px;object-fit:cover;" %>
+          <% else %>
+            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width:150px;height:150px;">
+              <span class="text-white display-4"><%= @user.email[0].upcase %></span>
             </div>
-            
-            <!-- Кнопки действий -->
-            <% if @user != current_user %>
-              <div class="mt-3">
-                <% case @friendship_status %>
-                <% when :friends %>
-                  <span class="badge bg-success mb-3">Друг</span>
-                  <%= link_to "Удалить из друзей", 
-                        friendship_path(@user), 
-                        method: :delete,
-                        data: { confirm: "Удалить из друзей?" },
-                        class: "btn btn-danger w-100" %>
-                <% when :request_sent %>
-                  <span class="badge bg-warning text-dark mb-3">Заявка отправлена</span>
-                  <%= link_to "Отменить заявку", 
-                        friendship_path(@user), 
-                        method: :delete,
-                        data: { confirm: "Отменить заявку?" },
-                        class: "btn btn-warning w-100" %>
-                <% when :request_received %>
-                  <span class="badge bg-info mb-3">Прислал вам заявку</span>
-                  <div class="d-grid gap-2">
-                    <%= link_to "Принять", 
-                          friendship_path(@user), 
-                          method: :patch,
-                          class: "btn btn-success" %>
-                    <%= link_to "Отклонить", 
-                          friendship_path(@user), 
-                          method: :delete,
-                          data: { confirm: "Отклонить заявку?" },
-                          class: "btn btn-danger" %>
-                  </div>
-                <% else %>
-                  <%= link_to "Добавить в друзья", 
-                        friendships_path(friend_id: @user.id), 
-                        method: :post,
-                        class: "btn btn-primary w-100" %>
-                <% end %>
-                <%= link_to "Написать сообщение", "#", class: "btn btn-outline-primary w-100 mt-2" %>
-              </div>
-            <% else %>
-              <div class="mt-3">
-                <%= link_to "Редактировать профиль", edit_my_profile_path, class: "btn btn-info w-100 mb-2" %>
-                <%= link_to "Мои коллекции", collections_path, class: "btn btn-success w-100 mb-2" %>
-                <%= link_to "Мои друзья", friendships_path, class: "btn btn-primary w-100" %>
-              </div>
-            <% end %>
-            
-            <hr>
-            <small class="text-muted">
-              Зарегистрирован: <%= l(@user.created_at, format: :long) %><br>
-              <% if @user.respond_to?(:current_sign_in_at) && @user.current_sign_in_at %>
-                Последний вход: <%= l(@user.current_sign_in_at, format: :short) %>
-              <% end %>
-            </small>
+          <% end %>
+
+          <h4><%= @user.email %></h4>
+
+          <div class="row mt-3">
+            <div class="col-6">
+              <strong><%= @collections_count %></strong>
+              <div class="text-muted small">Коллекций</div>
+            </div>
+            <div class="col-6">
+              <strong><%= @games_count %></strong>
+              <div class="text-muted small">Игр</div>
+            </div>
           </div>
+
+          <% if @user != current_user %>
+            <div class="mt-3">
+              <% case @friendship_status %>
+              <% when :friends %>
+                <span class="badge bg-success mb-2">Друг</span>
+              <% when :request_sent %>
+                <span class="badge bg-warning text-dark mb-2">Заявка отправлена</span>
+              <% when :request_received %>
+                <span class="badge bg-info mb-2">Ожидает ответа</span>
+              <% else %>
+                <%= link_to "Добавить в друзья",
+                      friendships_path(friend_id: @user.id),
+                      method: :post,
+                      class: "btn btn-primary w-100" %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="mt-3">
+              <%= link_to "Редактировать профиль", edit_my_profile_path,
+                    class: "btn btn-info w-100 mb-2" %>
+              <%= link_to "Мои коллекции", collections_path,
+                    class: "btn btn-success w-100" %>
+            </div>
+          <% end %>
+
         </div>
       </div>
-      
-      <div class="col-md-8">
-        <!-- Описание профиля -->
+    </div>
+
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="col-md-8">
+
+      <!-- О ПОЛЬЗОВАТЕЛЕ -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">О пользователе</h5>
+        </div>
+        <div class="card-body">
+          <% if @profile.bio.present? %>
+            <p class="lead"><%= @profile.bio %></p>
+          <% else %>
+            <p class="text-muted">
+              <%= @user == current_user ?
+                "Заполните описание профиля" :
+                "Пользователь не добавил описание" %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- КОЛЛЕКЦИИ -->
+      <% if @can_view_collections %>
         <div class="card mb-4">
           <div class="card-header">
-            <h5 class="mb-0">О пользователе</h5>
+            <h5 class="mb-0">Коллекции</h5>
           </div>
           <div class="card-body">
-            <% if @user.profile.bio.present? %>
-              <p class="lead"><%= @user.profile.bio %></p>
-            <% else %>
-              <p class="text-muted">
-                <%= @user == current_user ? 
-                    "Расскажите о себе в настройках профиля!" : 
-                    "Пользователь еще не добавил информацию о себе." %>
-              </p>
-            <% end %>
-            
-            <hr>
-            
-            <div class="row">
-              <div class="col-md-6">
-                <p><strong>Статус профиля:</strong><br>
-                  <span class="badge <%= @user.profile.private? ? 'bg-secondary' : 'bg-success' %>">
-                    <%= @user.profile.private? ? '🔒 Приватный' : '🌐 Публичный' %>
-                  </span>
-                </p>
-              </div>
-              <div class="col-md-6">
-                <p><strong>Зарегистрирован:</strong><br>
-                  <%= l(@user.created_at.to_date, format: :long) %>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Коллекции пользователя -->
-        <% if @can_view_collections && @public_collections.any? %>
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Коллекции пользователя</h5>
-              <span class="badge bg-primary"><%= @collections_count %></span>
-            </div>
-            <div class="card-body">
-              <% if @top_collections.any? %>
-                <div class="row">
-                  <% @top_collections.each do |collection| %>
-                    <div class="col-md-4 mb-3">
-                      <div class="card h-100">
-                        <div class="card-body">
-                          <h6 class="card-title">
-                            <%= collection.name %>
-                            <span class="badge bg-secondary"><%= collection.games_count %></span>
-                          </h6>
-                          <% if collection.description.present? %>
-                            <p class="card-text text-muted small">
-                              <%= collection.description.truncate(60) %>
-                            </p>
-                          <% end %>
-                        </div>
-                        <div class="card-footer bg-transparent">
-                          <%= link_to "Просмотреть", collection_path(collection), 
-                                class: "btn btn-sm btn-outline-primary w-100" %>
-                        </div>
+
+            <% if @top_collections.any? %>
+              <div class="row">
+                <% @top_collections.each do |collection| %>
+                  <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <strong><%= collection.name %></strong><br>
+                        <small class="text-muted">
+                          Игр: <%= collection.games_count %>
+                        </small>
+                      </div>
+                      <div class="card-footer bg-transparent">
+                        <%= link_to "Открыть",
+                              collection_path(collection),
+                              class: "btn btn-sm btn-outline-primary w-100" %>
                       </div>
                     </div>
-                  <% end %>
-                </div>
-                
-                <% if @collections_count > 3 %>
-                  <div class="text-center mt-3">
-                    <%= link_to "Все коллекции пользователя", collections_path(user_id: @user.id), 
-                          class: "btn btn-outline-secondary btn-sm" %>
                   </div>
                 <% end %>
-              <% else %>
-                <p class="text-muted text-center py-3">
-                  У пользователя пока нет коллекций
-                </p>
-              <% end %>
-            </div>
-          </div>
-        <% elsif @can_view_collections %>
-          <div class="card mb-4">
-            <div class="card-header">
-              <h5 class="mb-0">Коллекции</h5>
-            </div>
-            <div class="card-body">
-              <p class="text-muted text-center py-3">
-                Пользователь еще не создал коллекций
-              </p>
-            </div>
-          </div>
-        <% elsif @user != current_user %>
-          <div class="card mb-4">
-            <div class="card-header">
-              <h5 class="mb-0">Коллекции</h5>
-            </div>
-            <div class="card-body">
-              <p class="text-muted text-center py-3">
-                <% if @user.profile.private? %>
-                  🔒 Коллекции пользователя приватные
-                <% else %>
-                  Чтобы видеть коллекции этого пользователя, нужно быть друзьями
-                <% end %>
-              </p>
-            </div>
-          </div>
-        <% end %>
-        
-        <!-- Дополнительная информация -->
-        <div class="card">
-          <div class="card-header">
-            <h5 class="mb-0">Активность</h5>
-          </div>
-          <div class="card-body">
-            <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Коллекции
-                <span class="badge bg-primary rounded-pill"><%= @collections_count %></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Всего игр в коллекциях
-                <span class="badge bg-success rounded-pill"><%= @games_count %></span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                Друзей
-                <span class="badge bg-info rounded-pill">
-                  <%= @user.accepted_friends.count if Friendship.table_exists? %>
-                </span>
-              </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                На сайте
-                <span class="text-muted"><%= time_ago_in_words(@user.created_at) %></span>
-              </li>
-            </ul>
+              </div>
+            <% else %>
+              <p class="text-muted text-center">Коллекций пока нет</p>
+            <% end %>
+
           </div>
         </div>
-      </div>
+      <% else %>
+        <div class="card">
+          <div class="card-body text-muted text-center">
+            🔒 Коллекции недоступны
+          </div>
+        </div>
+      <% end %>
+
     </div>
-    
-    
-  <% else %>
-    <div class="text-center py-5">
-      <h2>Профиль не найден</h2>
-      <p class="text-muted">Пользователь не существует или его профиль недоступен.</p>
-      <%= link_to "Вернуться к списку пользователей", profiles_path, class: "btn btn-primary" %>
-    </div>
-  <% end %>
+  </div>
 </div>
