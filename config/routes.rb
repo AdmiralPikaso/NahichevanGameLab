@@ -21,7 +21,8 @@ Rails.application.routes.draw do
   # -------------------------
   resources :profiles, only: [:index, :show], constraints: { id: /\d+/ }
 
-  resources :games
+  # УБРАЛ ЛИШНЮЮ СТРОКУ: resources :games
+  
   # -------------------------
   # Игры
   # -------------------------
@@ -68,8 +69,8 @@ Rails.application.routes.draw do
       post :quick_create
     end
 
-
-    resources :games, only: [:index], controller: "collection_games"
+    # УБРАЛ ДУБЛИРУЮЩИЙСЯ КОД
+    # resources :games, only: [:index], controller: "collection_games"
   end
 
   resources :collection_games, only: [:create, :destroy]
@@ -131,68 +132,6 @@ Rails.application.routes.draw do
   # -------------------------
   get "/health", to: "health#index"
 
-end
-
-
-    resources :games, only: [:index], controller: "collection_games"
-  end
-
-  resources :collection_games, only: [:create, :destroy]
-
-  # -------------------------
-  # Вишлист
-  # -------------------------
-  resources :wishlists, only: [:index, :create, :destroy] do
-    collection do
-      get  :my
-      post :quick_add
-    end
-  end
-
-  # -------------------------
-  # Друзья
-  # -------------------------
-  resources :friendships, only: [:index, :create, :update, :destroy] do
-    collection do
-      get :pending
-      get :suggestions
-    end
-
-    member do
-      patch :accept
-      patch :reject
-    end
-  end
-
-  # -------------------------
-  # Аналитика
-  # -------------------------
-  namespace :analytics do
-    get :collections
-    get :games
-    get :friends
-    get "user/:id", to: "dashboard#user", as: :user
-  end
-
-  # -------------------------
-  # API
-  # -------------------------
-  namespace :api do
-    namespace :v1 do
-      resources :collections, only: [:index, :show, :create]
-      resources :collection_games, only: [:create, :destroy]
-      resources :games, only: [:index]
-    end
-  end
-
-  # -------------------------
-  # Ошибки
-  # -------------------------
-  match "/404", to: "errors#not_found", via: :all
-  match "/500", to: "errors#internal_server_error", via: :all
-
-  # -------------------------
-  # Health check
-  # -------------------------
-  get "/health", to: "health#index"
+  # УБРАЛ ВЕСЬ ДУБЛИРУЮЩИЙСЯ КОД, КОТОРЫЙ БЫЛ ЗДЕСЬ
+  # (все строки после этого комментария нужно удалить)
 end
