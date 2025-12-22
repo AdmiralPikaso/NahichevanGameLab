@@ -48,7 +48,13 @@ class ProfilesController < ApplicationController
   private
 
   def set_profile
-    @profile = Profile.includes(user: { collections: :games }).find(params[:id])
+    @profile =
+      if params[:id].present?
+        Profile.includes(user: { collections: :games }).find(params[:id])
+      else
+        current_user.profile
+      end
+
     @user = @profile.user
   end
 
