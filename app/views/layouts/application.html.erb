@@ -6,6 +6,15 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     
+    <!-- Bootstrap для красивого меню -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+      /* Стили для меню */
+      .main-nav {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 10px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     <!-- Bootstrap для красивого меню (опционально) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Bootstrap Icons для иконок -->
@@ -20,6 +29,16 @@
       .main-nav a {
         color: white;
         text-decoration: none;
+        margin-right: 10px;
+        padding: 8px 15px;
+        display: inline-block;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+      .main-nav a:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
         margin-right: 15px;
         padding: 8px 12px;
         display: inline-block;
@@ -32,6 +51,72 @@
         float: right;
         color: white;
       }
+      .user-info a {
+        margin-left: 10px;
+      }
+      .container {
+        padding: 0 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .flash-notice {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        padding: 12px 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+        border-left: 4px solid #28a745;
+      }
+      .flash-alert {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        padding: 12px 20px;
+        margin: 15px 0;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+      }
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background: white;
+        min-width: 200px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        padding: 10px 0;
+      }
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+      .dropdown-content a {
+        color: #333;
+        padding: 10px 20px;
+        display: block;
+        text-decoration: none;
+      }
+      .dropdown-content a:hover {
+        background: #f8f9fa;
+      }
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+      .dropdown-btn {
+        color: white;
+        background: none;
+        border: none;
+        padding: 8px 15px;
+        cursor: pointer;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+      .dropdown-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .nav-divider {
+        display: inline-block;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 0 5px;
       .container {
         padding: 0 20px;
       }
@@ -198,6 +283,37 @@
     <!-- НАВИГАЦИОННОЕ МЕНЮ -->
     <div class="main-nav">
       <!-- Лого/название -->
+      <%= link_to "🎮 GameHub", root_path, style: "font-size: 1.2rem; font-weight: bold;" %>
+      
+      <!-- Основные ссылки -->
+      <span class="nav-divider">|</span>
+      <%= link_to "Все игры", games_path %>
+      <%= link_to "Разработчики", developers_path %>
+      
+      <!-- Коллекции (выпадающее меню) -->
+      <% if user_signed_in? %>
+        <div class="dropdown">
+          <button class="dropdown-btn">Коллекции ▽</button>
+          <div class="dropdown-content">
+            <%= link_to "Мои коллекции", collections_path %>
+            <%= link_to "Создать коллекцию", new_collection_path %>
+            <%= link_to "Добавить в коллекцию", "#", onclick: "alert('Выберите коллекцию на странице игры')" %>
+          </div>
+        </div>
+        
+        <%= link_to "Вишлист", wishlists_path, style: "color: #ffd700;" %>
+        
+        <!-- Друзья (выпадающее меню) -->
+        <div class="dropdown">
+          <button class="dropdown-btn">Друзья ▽</button>
+          <div class="dropdown-content">
+            <%= link_to "Мои друзья", friendships_path %>
+            <%= link_to "Заявки в друзья", pending_friendships_path %>
+          </div>
+        </div>
+        
+        <!-- Пользователи и профили -->
+        <%= link_to "Пользователи", profiles_path %>
       <%= link_to "🎮 GameHub", root_path %>
       
       <!-- Основные ссылки -->
@@ -213,6 +329,23 @@
       <!-- Пользовательские ссылки (правая часть) -->
       <div class="user-info">
         <% if user_signed_in? %>
+          <span style="margin-right: 10px;">Привет, <strong><%= current_user.email.split('@').first %></strong>!</span>
+          
+          <!-- Профиль пользователя (выпадающее меню) -->
+          <div class="dropdown" style="display: inline-block;">
+            <button class="dropdown-btn">Аккаунт ▽</button>
+            <div class="dropdown-content" style="right: 0;">
+              <%= link_to "👤 Мой профиль", my_profile_path %>
+              <%= link_to "⚙️ Настройки", edit_user_registration_path %>
+              <%= link_to "📊 Статистика", "#" %>
+              <hr style="margin: 5px 0;">
+              <%= link_to "🚪 Выйти", destroy_user_session_path, method: :delete, style: "color: #dc3545;" %>
+            </div>
+          </div>
+          
+        <% else %>
+          <%= link_to "🔐 Войти", new_user_session_path %>
+          <%= link_to "📝 Регистрация", new_user_registration_path %>
           Привет, <%= current_user.email %>!
           <%= link_to "Мой профиль", my_profile_path %>
           <%= link_to "Выйти", destroy_user_session_path, method: :delete %>
@@ -225,6 +358,15 @@
     
     <!-- Уведомления -->
     <% if notice %>
+      <div class="flash-notice">
+        <span>✅</span> <%= notice %>
+      </div>
+    <% end %>
+    
+    <% if alert %>
+      <div class="flash-alert">
+        <span>⚠️</span> <%= alert %>
+      </div>
       <div class="flash-notice"><%= notice %></div>
     <% end %>
     
@@ -237,6 +379,22 @@
       <%= yield %>
     </div>
     
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Простой скрипт для выпадающих меню -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.main-nav a');
+        
+        navLinks.forEach(link => {
+          if (link.getAttribute('href') === currentPath) {
+            link.style.background = 'rgba(255, 255, 255, 0.3)';
+            link.style.fontWeight = 'bold';
+          }
+        });
+      });
     <!-- Bootstrap JS (если используешь Bootstrap компоненты) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
