@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< Updated upstream
 ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
+=======
+ActiveRecord::Schema[8.1].define(version: 2025_12_22_140038) do
+>>>>>>> Stashed changes
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -81,6 +85,33 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
     t.index ["user_id"], name: "index_profiles_on_user_id"
   end
 
+<<<<<<< Updated upstream
+=======
+  create_table "ratings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "game_id", null: false
+    t.integer "score", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["game_id"], name: "index_ratings_on_game_id"
+    t.index ["user_id", "game_id"], name: "index_ratings_on_user_id_and_game_id", unique: true
+    t.index ["user_id"], name: "index_ratings_on_user_id"
+  end
+
+  create_table "reviews", force: :cascade do |t|
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.bigint "game_id", null: false
+    t.integer "rating", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["game_id"], name: "index_reviews_on_game_id"
+    t.index ["user_id", "created_at"], name: "index_reviews_on_user_id_and_created_at"
+    t.index ["user_id"], name: "index_reviews_on_user_id"
+  end
+
+>>>>>>> Stashed changes
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -98,4 +129,13 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_000003) do
   add_foreign_key "game_developers", "developers"
   add_foreign_key "game_developers", "games"
   add_foreign_key "profiles", "users"
+<<<<<<< Updated upstream
+=======
+  add_foreign_key "ratings", "games"
+  add_foreign_key "ratings", "users"
+  add_foreign_key "reviews", "games"
+  add_foreign_key "reviews", "users"
+  add_foreign_key "wishlists", "games"
+  add_foreign_key "wishlists", "users"
+>>>>>>> Stashed changes
 end
