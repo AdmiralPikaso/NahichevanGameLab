@@ -1,21 +1,27 @@
 Rails.application.routes.draw do
+  # -------------------------
+  # Главная
+  # -------------------------
   root "home#index"
+
+  # -------------------------
+  # Devise (авторизация)
+  # -------------------------
   devise_for :users
 
-  # МОЙ профиль (безопасный URL)
-  get "/me", to: "profiles#me", as: :my_profile
-  get "/me/edit", to: "profiles#edit", as: :edit_my_profile
-  patch "/me", to: "profiles#update"
+  # -------------------------
+  # Мой профиль
+  # -------------------------
+  get "/me",       to: "profiles#me",   as: :my_profile
+  get "/me/edit",  to: "profiles#edit", as: :edit_my_profile
+  patch "/me",     to: "profiles#update"
 
-  # ЧУЖИЕ профили + список, но ID только цифры
-  # Это защищает от /profiles/me, /profiles/new и других конфликтов
-  resources :profiles, 
-    only: [:index, :show], 
-    constraints: { id: /[0-9]+/ }
+  # -------------------------
+  # Публичные профили
+  # -------------------------
+  resources :profiles, only: [:index, :show], constraints: { id: /\d+/ }
 
-<<<<<<< Updated upstream
   resources :games
-=======
   # -------------------------
   # Игры
   # -------------------------
@@ -61,6 +67,7 @@ Rails.application.routes.draw do
       get  :public
       post :quick_create
     end
+
 
     resources :games, only: [:index], controller: "collection_games"
   end
@@ -123,9 +130,69 @@ Rails.application.routes.draw do
   # Health check
   # -------------------------
   get "/health", to: "health#index"
->>>>>>> Stashed changes
+
 end
 
 
+    resources :games, only: [:index], controller: "collection_games"
+  end
 
+  resources :collection_games, only: [:create, :destroy]
 
+  # -------------------------
+  # Вишлист
+  # -------------------------
+  resources :wishlists, only: [:index, :create, :destroy] do
+    collection do
+      get  :my
+      post :quick_add
+    end
+  end
+
+  # -------------------------
+  # Друзья
+  # -------------------------
+  resources :friendships, only: [:index, :create, :update, :destroy] do
+    collection do
+      get :pending
+      get :suggestions
+    end
+
+    member do
+      patch :accept
+      patch :reject
+    end
+  end
+
+  # -------------------------
+  # Аналитика
+  # -------------------------
+  namespace :analytics do
+    get :collections
+    get :games
+    get :friends
+    get "user/:id", to: "dashboard#user", as: :user
+  end
+
+  # -------------------------
+  # API
+  # -------------------------
+  namespace :api do
+    namespace :v1 do
+      resources :collections, only: [:index, :show, :create]
+      resources :collection_games, only: [:create, :destroy]
+      resources :games, only: [:index]
+    end
+  end
+
+  # -------------------------
+  # Ошибки
+  # -------------------------
+  match "/404", to: "errors#not_found", via: :all
+  match "/500", to: "errors#internal_server_error", via: :all
+
+  # -------------------------
+  # Health check
+  # -------------------------
+  get "/health", to: "health#index"
+end

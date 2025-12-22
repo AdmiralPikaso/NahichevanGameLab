@@ -1,38 +1,129 @@
-<h1>Профиль пользователя</h1>
+<div class="container">
+  <div class="row">
+    <!-- ЛЕВАЯ КОЛОНКА -->
+    <div class="col-md-4">
+      <div class="card mb-4">
+        <div class="card-body text-center">
 
-<% if @profile.avatar.attached? %>
-  <%= image_tag @profile.avatar, width: 150 %>
-<% else %>
-  <p>Аватар не загружен</p>
-<% end %>
+          <% if @profile.avatar.attached? %>
+            <%= image_tag @profile.avatar.variant(resize: "150x150"),
+              class: "rounded-circle mb-3",
+              style: "width:150px;height:150px;object-fit:cover;" %>
+          <% else %>
+            <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3"
+                 style="width:150px;height:150px;">
+              <span class="text-white display-4"><%= @user.email[0].upcase %></span>
+            </div>
+          <% end %>
 
-<p><strong>Email:</strong> <%= @profile.user.email %></p>
+          <h4><%= @user.email %></h4>
 
-<p>
-  <strong>О себе:</strong><br>
-  <%= @profile.bio.presence || "Пока ничего не указано" %>
-</p>
+          <div class="row mt-3">
+            <div class="col-6">
+              <strong><%= @collections_count %></strong>
+              <div class="text-muted small">Коллекций</div>
+            </div>
+            <div class="col-6">
+              <strong><%= @games_count %></strong>
+              <div class="text-muted small">Игр</div>
+            </div>
+          </div>
 
-<p>
-  <strong>Приватность:</strong>
-  <%= @profile.private? ? "Закрытый профиль" : "Открытый профиль" %>
-</p>
+          <% if @user != current_user %>
+            <div class="mt-3">
+              <% case @friendship_status %>
+              <% when :friends %>
+                <span class="badge bg-success mb-2">Друг</span>
+              <% when :request_sent %>
+                <span class="badge bg-warning text-dark mb-2">Заявка отправлена</span>
+              <% when :request_received %>
+                <span class="badge bg-info mb-2">Ожидает ответа</span>
+              <% else %>
+                <%= link_to "Добавить в друзья",
+                      friendships_path(friend_id: @user.id),
+                      method: :post,
+                      class: "btn btn-primary w-100" %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="mt-3">
+              <%= link_to "Редактировать профиль", edit_my_profile_path,
+                    class: "btn btn-info w-100 mb-2" %>
+              <%= link_to "Мои коллекции", collections_path,
+                    class: "btn btn-success w-100" %>
+              <%= link_to "Мои друзья",
+          friendships_path,
+          class: "btn btn-primary w-100" %>
+            </div>
+          <% end %>
 
-<hr>
+        </div>
+      </div>
+    </div>
 
-<!-- ===== НАВИГАЦИЯ ВНИЗУ ===== -->
-<div style="margin-top: 20px;">
-  <%= link_to "Пользователи", profiles_path %> |
+    <!-- ПРАВАЯ КОЛОНКА -->
+    <div class="col-md-8">
 
-  <% if @profile == current_user.profile %>
-    <%= link_to "Редактировать профиль", edit_my_profile_path %> |
-    <%= button_to "Выйти", destroy_user_session_path, method: :delete %>
-  <% else %>
-    <%= link_to "Мой профиль", my_profile_path %>
-  <% end %>
+      <!-- О ПОЛЬЗОВАТЕЛЕ -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">О пользователе</h5>
+        </div>
+        <div class="card-body">
+          <% if @profile.bio.present? %>
+            <p class="lead"><%= @profile.bio %></p>
+          <% else %>
+            <p class="text-muted">
+              <%= @user == current_user ?
+                "Заполните описание профиля" :
+                "Пользователь не добавил описание" %>
+            </p>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- КОЛЛЕКЦИИ -->
+      <% if @can_view_collections %>
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Коллекции</h5>
+          </div>
+          <div class="card-body">
+
+            <% if @top_collections.any? %>
+              <div class="row">
+                <% @top_collections.each do |collection| %>
+                  <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                      <div class="card-body">
+                        <strong><%= collection.name %></strong><br>
+                        <small class="text-muted">
+                          Игр: <%= collection.games_count %>
+                        </small>
+                      </div>
+                      <div class="card-footer bg-transparent">
+                        <%= link_to "Открыть",
+                              collection_path(collection),
+                              class: "btn btn-sm btn-outline-primary w-100" %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-muted text-center">Коллекций пока нет</p>
+            <% end %>
+
+          </div>
+        </div>
+      <% else %>
+        <div class="card">
+          <div class="card-body text-muted text-center">
+            🔒 Коллекции недоступны
+          </div>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
 </div>
-
-
-
-
-

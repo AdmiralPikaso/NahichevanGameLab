@@ -1,48 +1,290 @@
-<h1>🎮 Каталог игр</h1>
-
-<%= link_to "➕ Добавить новую игру", new_game_path, class: "btn btn-primary" %>
-
-<% if @games.any? %>
-  <div class="games-list mt-4">
-    <% @games.each do |game| %>
-      <div class="card mb-3">
-        <div class="row g-0">
-          <% if game.cover_url.present? %>
-            <div class="col-md-3">
-              <img src="<%= game.cover_url %>" 
-                   alt="<%= game.title %>" 
-                   class="img-fluid rounded-start"
-                   style="max-height: 200px; object-fit: cover;">
+<div class="container">
+  <!-- Заголовок и управление -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+      <i class="bi bi-controller"></i> Каталог игр
+      <small class="text-muted fs-5">(<%= @games.count %> игр)</small>
+    </h1>
+    <div>
+      <%= link_to new_game_path, class: "btn btn-primary" do %>
+        <i class="bi bi-plus-circle"></i> Добавить игру
+      <% end %>
+      <%= link_to wishlists_path, class: "btn btn-outline-danger ms-2" do %>
+        <i class="bi bi-heart"></i> Мой вишлист
+        <% if user_signed_in? && current_user.wishlists.any? %>
+          <span class="badge bg-danger"><%= current_user.wishlists.count %></span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Фильтры и поиск -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row g-3">
+        <!-- Поиск -->
+        <div class="col-md-6">
+          <%= form_tag games_path, method: :get, class: "row g-2" do %>
+            <div class="col-md-8">
+              <%= text_field_tag :search, params[:search], 
+                    class: "form-control", 
+                    placeholder: "Поиск по названию, описанию..." %>
+            </div>
+            <div class="col-md-4">
+              <%= submit_tag "Найти", class: "btn btn-primary w-100" %>
             </div>
           <% end %>
-          
-          <div class="<%= game.cover_url.present? ? 'col-md-9' : 'col-12' %>">
+        </div>
+        
+        <!-- Фильтры -->
+        <div class="col-md-6">
+          <div class="d-flex justify-content-end gap-2">
+            <!-- Фильтр по вишлисту -->
+            <% if user_signed_in? %>
+              <div class="dropdown">
+                <button class="btn btn-outline-danger dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown">
+                  <i class="bi bi-heart"></i> Вишлист
+                </button>
+                <ul class="dropdown-menu">
+                  <li>
+                    <%= link_to "Только в моем вишлисте", 
+                          games_path(filter: 'in_my_wishlist'), 
+                          class: "dropdown-item" %>
+                  </li>
+                  <li>
+                    <%= link_to "Не в моем вишлисте", 
+                          games_path(filter: 'not_in_my_wishlist'), 
+                          class: "dropdown-item" %>
+                  </li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <%= link_to "Сбросить фильтр", games_path, class: "dropdown-item" %>
+                  </li>
+                </ul>
+              </div>
+            <% end %>
+            
+            <!-- Сортировка -->
+            <div class="dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle" type="button" 
+                      data-bs-toggle="dropdown">
+                <i class="bi bi-sort-down"></i> Сортировка
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <%= link_to "По названию (А-Я)", 
+                        games_path(sort: 'title_asc'), 
+                        class: "dropdown-item" %>
+                </li>
+                <li>
+                  <%= link_to "По названию (Я-А)", 
+                        games_path(sort: 'title_desc'), 
+                        class: "dropdown-item" %>
+                </li>
+                <li>
+                  <%= link_to "По дате выхода (новые)", 
+                        games_path(sort: 'release_desc'), 
+                        class: "dropdown-item" %>
+                </li>
+                <li>
+                  <%= link_to "По рейтингу (высокий)", 
+                        games_path(sort: 'rating_desc'), 
+                        class: "dropdown-item" %>
+                </li>
+                <li>
+                  <%= link_to "По популярности в вишлистах", 
+                        games_path(sort: 'wishlist_desc'), 
+                        class: "dropdown-item" %>
+                </li>
+              </ul>
+            </div>
+            
+            <%= link_to "Сбросить", games_path, class: "btn btn-outline-secondary" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Статистика -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-primary"><%= @games.count %></h3>
+          <p class="card-text text-muted">Всего игр</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-success">
+            <%= @games.where("metacritic_score >= ?", 80).count %>
+          </h3>
+          <p class="card-text text-muted">С оценкой 80+</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-warning">
+            <%= @games.joins(:wishlists).distinct.count %>
+          </h3>
+          <p class="card-text text-muted">В вишлистах</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title text-info">
+            <%= @games.where("release_date >= ?", Date.today).count %>
+          </h3>
+          <p class="card-text text-muted">Скоро выйдут</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Список игр -->
+  <% if @games.any? %>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      <% @games.each do |game| %>
+        <div class="col">
+          <div class="card h-100 game-card">
+            <!-- Бейдж вишлиста -->
+            <% if user_signed_in? && current_user.in_wishlist?(game) %>
+              <div class="position-absolute top-0 end-0 m-2">
+                <span class="badge bg-danger p-2">
+                  <i class="bi bi-heart-fill"></i>
+                </span>
+              </div>
+            <% end %>
+            
+            <!-- Обложка игры -->
+            <% if game.cover_url.present? %>
+              <div class="game-cover-container">
+                <img src="<%= game.cover_url %>" 
+                     alt="<%= game.title %>" 
+                     class="card-img-top"
+                     style="height: 200px; object-fit: cover;">
+                
+                <!-- Наложение с информацией -->
+                <div class="game-overlay">
+                  <% if game.metacritic_score.present? %>
+                    <span class="badge bg-<%= game.metacritic_score >= 75 ? 'success' : game.metacritic_score >= 50 ? 'warning' : 'danger' %> score-badge">
+                      <%= game.metacritic_score %>
+                    </span>
+                  <% end %>
+                  
+                  <!-- Кнопка быстрого добавления в вишлист -->
+                  <% if user_signed_in? %>
+                    <div class="quick-actions">
+                      <% if current_user.in_wishlist?(game) %>
+                        <%= link_to wishlist_path(current_user.wishlists.find_by(game: game)), 
+                              method: :delete,
+                              class: "btn btn-sm btn-danger",
+                              data: { 
+                                confirm: "Удалить '#{game.title}' из вишлиста?" 
+                              },
+                              title: "Удалить из вишлиста" do %>
+                          <i class="bi bi-heartbreak-fill"></i>
+                        <% end %>
+                      <% else %>
+                        <%= link_to quick_add_wishlists_path(game_id: game.id, priority: 'medium'), 
+                              method: :post,
+                              class: "btn btn-sm btn-outline-light",
+                              title: "Быстро добавить в вишлист" do %>
+                          <i class="bi bi-heart"></i>
+                        <% end %>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+            
+            <!-- Контент карточки -->
             <div class="card-body">
               <h5 class="card-title">
-                <%= link_to game.title, game %>
-                <% if game.metacritic_score.present? %>
-                  <span class="badge bg-<%= game.metacritic_score >= 75 ? 'success' : game.metacritic_score >= 50 ? 'warning' : 'danger' %> ms-2">
-                    <%= game.metacritic_score %>
-                  </span>
-                <% end %>
+                <%= link_to game.title, game_path(game), class: "text-decoration-none" %>
               </h5>
               
-              <p class="card-text">
-                <small class="text-muted">
-                  📅 <%= game.release_date %>
-                  <% if game.developers.any? %>
-                    | 👨‍💻 <%= game.developer_names %>
-                  <% end %>
-                </small>
-              </p>
+              <!-- Мета-информация -->
+              <div class="game-meta mb-3">
+                <% if game.release_date %>
+                  <div class="mb-1">
+                    <small class="text-muted">
+                      <i class="bi bi-calendar"></i>
+                      <%= l(game.release_date, format: :short) %>
+                      <% if game.release_date > Date.today %>
+                        <span class="badge bg-warning text-dark ms-1">
+                          <i class="bi bi-clock"></i> Скоро
+                        </span>
+                      <% end %>
+                    </small>
+                  </div>
+                <% end %>
+                
+                <% if game.developers.any? %>
+                  <div class="mb-1">
+                    <small class="text-muted">
+                      <i class="bi bi-people"></i>
+                      <%= game.developers.first.name %>
+                      <% if game.developers.count > 1 %>
+                        <span class="badge bg-secondary ms-1">+<%= game.developers.count - 1 %></span>
+                      <% end %>
+                    </small>
+                  </div>
+                <% end %>
+                
+                <!-- Статистика -->
+                <div class="d-flex justify-content-between mt-2">
+                  <small class="text-muted">
+                    <i class="bi bi-heart text-danger"></i>
+                    <%= game.wishlists.count %> в вишлистах
+                  </small>
+                  <small class="text-muted">
+                    <i class="bi bi-folder text-primary"></i>
+                    <%= game.collections.count %> в коллекциях
+                  </small>
+                </div>
+              </div>
               
+              <!-- Описание -->
               <% if game.description.present? %>
-                <p class="card-text"><%= truncate(game.description, length: 150) %></p>
+                <p class="card-text text-muted small">
+                  <%= truncate(game.description, length: 100) %>
+                </p>
               <% end %>
+            </div>
+            
+            <!-- Футер карточки -->
+            <div class="card-footer bg-transparent">
+              <div class="d-flex justify-content-between align-items-center">
+                <div class="btn-group btn-group-sm">
+                  <%= link_to "Просмотр", game_path(game), class: "btn btn-outline-primary" %>
+                  <%= link_to "Редактировать", edit_game_path(game), class: "btn btn-outline-secondary" %>
+                </div>
+                
+                <!-- Кнопка расширенного добавления в вишлист -->
+                <% if user_signed_in? && !current_user.in_wishlist?(game) %>
+                  <button type="button" 
+                          class="btn btn-sm btn-outline-danger"
+                          data-bs-toggle="modal" 
+                          data-bs-target="#wishlistModal<%= game.id %>"
+                          title="Добавить в вишлист">
+                    <i class="bi bi-heart"></i>
+                  </button>
+                <% end %>
               
               <div class="mt-2">
                 <%= link_to "👁️ Просмотр", game, class: "btn btn-sm btn-outline-primary" %>
                 <%= link_to "✏️ Редактировать", edit_game_path(game), class: "btn btn-sm btn-outline-secondary" %>
+                <%= link_to "📝 Написать рецензию", new_game_review_path(game), class: "btn btn-sm btn-outline-success" %>
                 <%= link_to "🗑️ Удалить", game, 
                     method: :delete, 
                     class: "btn btn-sm btn-outline-danger",
@@ -51,11 +293,248 @@
             </div>
           </div>
         </div>
+        
+        <!-- Модальное окно для добавления в вишлист (для каждой игры) -->
+        <% if user_signed_in? && !current_user.in_wishlist?(game) %>
+          <div class="modal fade" id="wishlistModal<%= game.id %>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h6 class="modal-title">Добавить в вишлист</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <%= form_with(url: wishlists_path, method: :post, local: true) do |form| %>
+                  <%= hidden_field_tag :game_id, game.id %>
+                  <div class="modal-body">
+                    <p class="small mb-3">
+                      <strong><%= game.title %></strong>
+                    </p>
+                    
+                    <div class="mb-3">
+                      <label class="form-label small">Приоритет:</label>
+                      <select name="priority" class="form-select form-select-sm">
+                        <option value="high">🔼 Высокий</option>
+                        <option value="medium" selected>↔️ Средний</option>
+                        <option value="low">🔽 Низкий</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer justify-content-center">
+                    <button type="submit" class="btn btn-danger btn-sm w-100">
+                      <i class="bi bi-heart-fill"></i> Добавить
+                    </button>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <!-- Пагинация (если нужно) -->
+    <div class="mt-4 text-center">
+      <small class="text-muted">
+        Показано <%= @games.count %> из <%= Game.count %> игр
+      </small>
+    </div>
+    
+  <% else %>
+    <!-- Если игр нет -->
+    <div class="text-center py-5">
+      <div class="mb-4">
+        <i class="bi bi-controller display-1 text-muted"></i>
       </div>
-    <% end %>
-  </div>
-<% else %>
-  <div class="alert alert-info mt-4">
-    <p>Игр пока нет. <%= link_to "Добавьте первую!", new_game_path %></p>
-  </div>
-<% end %>
+      <h3 class="text-muted mb-3">Игр не найдено</h3>
+      <p class="text-muted mb-4">
+        <%= params[:search].present? ? "Попробуйте изменить параметры поиска" : "Добавьте первую игру в каталог" %>
+      </p>
+      <div class="d-flex justify-content-center gap-3">
+        <%= link_to "Добавить игру", new_game_path, class: "btn btn-primary" %>
+        <%= link_to "Сбросить фильтры", games_path, class: "btn btn-outline-primary" %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<style>
+.game-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+  position: relative;
+}
+
+.game-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  border-color: #4e73df;
+}
+
+.game-cover-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.game-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.score-badge {
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.quick-actions {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.game-card:hover .quick-actions {
+  opacity: 1;
+}
+
+.game-meta {
+  border-top: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 10px 0;
+}
+
+.card-footer {
+  background: linear-gradient(to right, #f8f9fa, #ffffff);
+}
+
+.btn-group .btn {
+  border-radius: 4px;
+}
+
+.btn-group .btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.btn-group .btn:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Подсветка карточек при наведении
+  const gameCards = document.querySelectorAll('.game-card');
+  gameCards.forEach(card => {
+    card.addEventListener('mouseenter', function() {
+      this.style.zIndex = '10';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+      this.style.zIndex = '1';
+    });
+  });
+  
+  // Обработка быстрого добавления в вишлист
+  const quickWishlistButtons = document.querySelectorAll('[data-game-id]');
+  quickWishlistButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const gameId = this.getAttribute('data-game-id');
+      const gameTitle = this.getAttribute('data-game-title');
+      
+      // AJAX запрос для быстрого добавления
+      fetch(`/wishlists/quick_add?game_id=${gameId}&priority=medium`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Обновляем UI
+          this.innerHTML = '<i class="bi bi-heartbreak-fill"></i>';
+          this.classList.remove('btn-outline-light');
+          this.classList.add('btn-danger');
+          this.setAttribute('title', 'Удалить из вишлиста');
+          
+          // Меняем обработчик
+          this.onclick = function(e) {
+            e.preventDefault();
+            if (confirm(`Удалить "${gameTitle}" из вишлиста?`)) {
+              fetch(`/wishlists/${data.wishlist_id}`, {
+                method: 'DELETE',
+                headers: {
+                  'X-CSRF-Token': document.querySelector('[name="csrf-token"]').content
+                }
+              })
+              .then(() => {
+                this.innerHTML = '<i class="bi bi-heart"></i>';
+                this.classList.remove('btn-danger');
+                this.classList.add('btn-outline-light');
+                this.setAttribute('title', 'Быстро добавить в вишлист');
+              });
+            }
+          };
+          
+          // Показываем уведомление
+          showToast('Игра добавлена в вишлист!', 'success');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showToast('Ошибка при добавлении в вишлист', 'error');
+      });
+    });
+  });
+  
+  // Функция для показа тостов
+  function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toastId = 'toast-' + Date.now();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-bg-${type === 'success' ? 'success' : 'danger'} border-0`;
+    toast.id = toastId;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+      <div class="d-flex">
+        <div class="toast-body">
+          ${message}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+      </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+    
+    toast.addEventListener('hidden.bs.toast', function () {
+      this.remove();
+    });
+  }
+  
+  function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+    container.style.zIndex = '1055';
+    document.body.appendChild(container);
+    return container;
+  }
+});
+</script>

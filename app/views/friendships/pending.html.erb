@@ -1,0 +1,142 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Заявки в друзья</h1>
+    <div>
+      <%= link_to "Мои друзья", friendships_path, class: "btn btn-outline-primary" %>
+    </div>
+  </div>
+  
+  <!-- Входящие заявки -->
+  <div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+      <h4 class="mb-0">
+        Входящие заявки
+        <% if @incoming_requests.any? %>
+          <span class="badge bg-danger ms-2"><%= @incoming_requests.count %></span>
+        <% end %>
+      </h4>
+    </div>
+    
+    <div class="card-body">
+      <% if @incoming_requests.any? %>
+        <div class="row">
+          <% @incoming_requests.each do |user| %>
+            <div class="col-md-6 mb-3">
+              <div class="card">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                      <% if user.profile&.avatar&.attached? %>
+                        <%= image_tag user.profile.avatar.variant(resize: "50x50"), class: "rounded-circle me-3" %>
+                      <% else %>
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                          <span class="text-white"><%= user.email[0].upcase %></span>
+                        </div>
+                      <% end %>
+                      <div>
+                        <h6 class="mb-0"><%= user.email %></h6>
+                        <% if user.profile&.bio.present? %>
+                          <small class="text-muted"><%= user.profile.bio.truncate(30) %></small>
+                        <% end %>
+                      </div>
+                    </div>
+                    <div>
+                      <%= link_to "Принять", 
+                            friendship_path(user), 
+                            method: :patch,
+                            class: "btn btn-success btn-sm me-1" %>
+                      <%= link_to "Отклонить", 
+                            friendship_path(user), 
+                            method: :delete,
+                            data: { confirm: "Отклонить заявку от #{user.email}?" },
+                            class: "btn btn-danger btn-sm" %>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <small class="text-muted">
+                    Заявка отправлена: <%= time_ago_in_words(Friendship.find_by(user_id: user.id, friend_id: current_user.id)&.created_at || Time.current) %> назад
+                  </small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <h5 class="text-muted">Нет входящих заявок</h5>
+          <p class="text-muted">Когда кто-то отправит вам заявку в друзья, она появится здесь</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Исходящие заявки -->
+  <div class="card">
+    <div class="card-header bg-info text-white">
+      <h4 class="mb-0">
+        Отправленные заявки
+        <% if @outgoing_requests.any? %>
+          <span class="badge bg-light text-dark ms-2"><%= @outgoing_requests.count %></span>
+        <% end %>
+      </h4>
+    </div>
+    
+    <div class="card-body">
+      <% if @outgoing_requests.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Статус</th>
+                <th>Отправлена</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @outgoing_requests.each do |user| %>
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <% if user.profile&.avatar&.attached? %>
+                        <%= image_tag user.profile.avatar.variant(resize: "40x40"), class: "rounded-circle me-3" %>
+                      <% else %>
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                          <span class="text-white"><%= user.email[0].upcase %></span>
+                        </div>
+                      <% end %>
+                      <div>
+                        <strong><%= user.email %></strong><br>
+                        <small class="text-muted"><%= user.profile&.bio&.truncate(30) || "Нет описания" %></small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge bg-warning text-dark">Ожидает ответа</span>
+                  </td>
+                  <td>
+                    <% friendship = Friendship.find_by(user_id: current_user.id, friend_id: user.id) %>
+                    <%= friendship ? time_ago_in_words(friendship.created_at) + " назад" : "—" %>
+                  </td>
+                  <td>
+                    <%= link_to "Отменить", 
+                          friendship_path(user), 
+                          method: :delete,
+                          data: { confirm: "Отменить заявку пользователю #{user.email}?" },
+                          class: "btn btn-outline-danger btn-sm" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-4">
+          <h5 class="text-muted">Нет отправленных заявок</h5>
+          <p class="text-muted">Вы еще не отправили ни одной заявки в друзья</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

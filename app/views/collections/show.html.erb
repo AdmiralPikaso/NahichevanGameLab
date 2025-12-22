@@ -1,0 +1,178 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="mb-1"><%= @collection.name %></h1>
+      <% if @collection.description.present? %>
+        <p class="text-muted mb-0"><%= @collection.description %></p>
+      <% end %>
+    </div>
+    <div>
+      <%= link_to "Добавить игру", "#add-game-modal", 
+            class: "btn btn-primary me-2",
+            data: { bs_toggle: "modal" } %>
+      <%= link_to "Изменить", edit_collection_path(@collection), class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+  
+  <!-- Информация о коллекции -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title"><%= @games.count %></h3>
+          <p class="card-text">Игр в коллекции</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title">
+            <%= @games.where("metacritic_score >= ?", 80).count %>
+          </h3>
+          <p class="card-text">С оценкой 80+</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title">
+            <%= @games.joins(:developers).distinct.count %>
+          </h3>
+          <p class="card-text">Разных разработчиков</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h3 class="card-title">
+            <%= @games.where("release_date <= ?", Date.today).count %>
+          </h3>
+          <p class="card-text">Вышедших игр</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Список игр -->
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">Игры в коллекции</h4>
+      <span class="badge bg-primary"><%= @games.count %></span>
+    </div>
+    
+    <div class="card-body">
+      <% if @games.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Разработчики</th>
+                <th>Дата выхода</th>
+                <th>Оценка</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @games.each do |game| %>
+                <tr>
+                  <td>
+                    <strong><%= game.title %></strong>
+                  </td>
+                  <td>
+                    <%= game.developers.map(&:name).join(", ") %>
+                  </td>
+                  <td>
+                    <%= game.release_date ? l(game.release_date) : "Неизвестно" %>
+                  </td>
+                  <td>
+                    <% if game.metacritic_score %>
+                      <span class="badge <%= game.metacritic_score >= 80 ? 'bg-success' : 'bg-warning' %>">
+                        <%= game.metacritic_score %>
+                      </span>
+                    <% else %>
+                      <span class="badge bg-secondary">Нет оценки</span>
+                    <% end %>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <%= link_to "Просмотр", game_path(game), class: "btn btn-outline-primary" %>
+                      <%= link_to "Удалить", 
+                            remove_game_collection_path(@collection, game_id: game.id), 
+                            method: :delete,
+                            data: { confirm: "Удалить '#{game.title}' из коллекции?" },
+                            class: "btn btn-outline-danger" %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <i class="bi bi-joystick display-1 text-muted"></i>
+          </div>
+          <h4 class="text-muted">В коллекции пока нет игр</h4>
+          <p class="text-muted mb-4">Добавьте первую игру в вашу коллекцию</p>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-game-modal">
+            Добавить игру
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <div class="mt-3">
+    <%= link_to "← Назад к коллекциям", collections_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>
+
+<!-- Модальное окно для добавления игры -->
+<div class="modal fade" id="add-game-modal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Добавить игру в коллекцию</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      
+      <div class="modal-body">
+        <% if @available_games.any? %>
+          <div class="row">
+            <% @available_games.each do |game| %>
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-body">
+                    <h6 class="card-title"><%= game.title %></h6>
+                    <% if game.developers.any? %>
+                      <p class="card-text small text-muted">
+                        <%= game.developers.map(&:name).join(", ") %>
+                      </p>
+                    <% end %>
+                    <%= link_to "Добавить", 
+                          add_game_collection_path(@collection, game_id: game.id), 
+                          method: :post,
+                          class: "btn btn-sm btn-primary w-100" %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-center text-muted py-4">
+            Все игры уже добавлены в эту коллекцию
+          </p>
+        <% end %>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
