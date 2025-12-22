@@ -71,19 +71,7 @@ Rails.application.routes.draw do
   end
   
   # Пользователи
-  resources :users, only: [:index, :show], constraints: { id: /[0-9]+/ } do
-    member do
-      get 'collections', to: 'users#collections' # Коллекции пользователя
-      get 'games', to: 'users#games' # Игры пользователя
-      get 'friends', to: 'users#friends' # Друзья пользователя
-      get 'stats', to: 'users#stats' # Статистика пользователя
-    end
-    
-    collection do
-      get 'search', to: 'users#search' # Поиск пользователей
-      get 'with_collections', to: 'users#with_collections' # Пользователи с коллекциями
-    end
-  end
+  resources :users, only: [:index, :show]
   
   # Быстрые действия
   namespace :quick do
@@ -138,8 +126,6 @@ Rails.application.routes.draw do
   end
   end
 
-  # Пользователи (если нужен список)
-  resources :users, only: [:index, :show]
 
   # Игры с рецензиями (ФИЧА #3)
   resources :games do

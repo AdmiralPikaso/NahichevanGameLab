@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="mb-0">Публичные профили</h1>
     <div>
-      <%= link_to "Все пользователи", users_path, class: "btn btn-outline-primary" %>
+      <%= link_to "Мой профиль", my_profile_path %>
     </div>
   </div>
   
@@ -278,7 +278,7 @@
         <%= params[:search].present? ? "По вашему запросу ничего не найдено" : "Пока нет публичных профилей" %>
       </p>
       <div class="d-flex justify-content-center gap-2">
-        <%= link_to "Все пользователи", users_path, class: "btn btn-primary" %>
+        <%= link_to "Все пользователи", profiles_path, class: "btn btn-primary" %>
         <%= link_to "Сбросить фильтры", profiles_path, class: "btn btn-outline-primary" %>
       </div>
     </div>

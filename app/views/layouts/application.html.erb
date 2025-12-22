@@ -2,531 +2,137 @@
 <html>
   <head>
     <title>NahichevanGameLab</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-    
-    <!-- Bootstrap для красивого меню -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    >
+
     <style>
-      /* Стили для меню */
-      .main-nav {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 10px 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    <!-- Bootstrap для красивого меню (опционально) -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons для иконок -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <style>
-      /* Простые стили для меню */
-      .main-nav {
-        background: #2c3e50;
-        padding: 10px 20px;
-        margin-bottom: 20px;
+      body {
+        background: #f5f6fa;
       }
-      .main-nav a {
-        color: white;
-        text-decoration: none;
-        margin-right: 10px;
-        padding: 8px 15px;
-        display: inline-block;
-        border-radius: 20px;
-        transition: all 0.3s ease;
-        font-weight: 500;
+
+      .navbar-brand {
+        font-weight: bold;
       }
-      .main-nav a:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        margin-right: 15px;
-        padding: 8px 12px;
-        display: inline-block;
-      }
-      .main-nav a:hover {
-        background: #3498db;
-        border-radius: 4px;
-      }
-      .user-info {
-        float: right;
-        color: white;
-      }
-      .user-info a {
-        margin-left: 10px;
-      }
-      .container {
-        padding: 0 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      .flash-notice {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        color: #155724;
-        padding: 12px 20px;
-        margin: 15px 0;
-        border-radius: 8px;
-        border-left: 4px solid #28a745;
-      }
-      .flash-alert {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        color: #721c24;
-        padding: 12px 20px;
-        margin: 15px 0;
-        border-radius: 8px;
-        border-left: 4px solid #dc3545;
-      }
-      .dropdown-content {
-        display: none;
-        position: absolute;
+
+      .profile-card {
         background: white;
-        min-width: 200px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
         border-radius: 8px;
-        z-index: 1000;
-        padding: 10px 0;
+        padding: 20px;
+        margin-bottom: 20px;
       }
-      .dropdown:hover .dropdown-content {
-        display: block;
-      }
-      .dropdown-content a {
-        color: #333;
-        padding: 10px 20px;
-        display: block;
-        text-decoration: none;
-      }
-      .dropdown-content a:hover {
-        background: #f8f9fa;
-      }
-      .dropdown {
-        position: relative;
-        display: inline-block;
-      }
-      .dropdown-btn {
-        color: white;
-        background: none;
-        border: none;
-        padding: 8px 15px;
-        cursor: pointer;
-        border-radius: 20px;
-        font-weight: 500;
-      }
-      .dropdown-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-      .nav-divider {
-        display: inline-block;
-        color: rgba(255, 255, 255, 0.5);
-        margin: 0 5px;
-      .container {
-        padding: 0 20px;
-      }
-      .flash-notice {
-        background: #d4edda;
-        color: #155724;
+
+      .stat-box {
+        text-align: center;
         padding: 10px;
-        margin: 10px 0;
-        border-radius: 4px;
+        background: #f1f3f5;
+        border-radius: 6px;
       }
+
+      .stat-box strong {
+        display: block;
+        font-size: 20px;
+      }
+
+      .flash-notice {
+        background: #d1e7dd;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+      }
+
       .flash-alert {
         background: #f8d7da;
-        color: #721c24;
-        padding: 10px;
-        margin: 10px 0;
-        border-radius: 4px;
-      }
-      
-      /* Стили для рейтинга звёзд */
-      .star-rating {
-        color: #ffc107;
-        font-size: 1.2em;
-      }
-      .star-rating .bi-star {
-        cursor: pointer;
-        transition: color 0.2s;
-      }
-      .star-rating .bi-star:hover {
-        color: #ffdb70;
-      }
-      
-      /* Стили для лайков */
-      .like-btn {
-        color: #dc3545;
-        text-decoration: none;
-        transition: color 0.2s;
-      }
-      .like-btn:hover {
-        color: #ff6b7d;
-      }
-      .like-count {
-        font-size: 0.9em;
-        color: #6c757d;
-      }
-      
-      /* Стили для рецензий и комментариев */
-      .review-card {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 15px;
+        padding: 12px;
+        border-radius: 6px;
         margin-bottom: 15px;
-        background: #fff;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      .review-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-      }
-      .review-rating {
-        font-weight: bold;
-        color: #ffc107;
-      }
-      .comment-card {
-        border-left: 3px solid #007bff;
-        padding-left: 15px;
-        margin: 10px 0;
-        background: #f8f9fa;
-        padding: 10px;
-        border-radius: 0 5px 5px 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      
-      /* Карточки рецензий одинакового размера */
-      .review-card {
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 15px;
-        background: #fff;
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        min-height: 280px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      
-      .review-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        flex-shrink: 0;
-      }
-      
-      .review-content {
-        flex: 1;
-        overflow: hidden;
-        margin-bottom: 15px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      
-      .review-content p {
-        display: -webkit-box;
-        -webkit-line-clamp: 4;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.5;
-        min-height: 6em;
-        margin-bottom: 0;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-      }
-      
-      .review-actions {
-        flex-shrink: 0;
-        margin-top: auto;
-      }
-      
-      /* Для карточек в списке (my_reviews) */
-      .card.review-card {
-        height: 100%;
-      }
-      
-      .card-body {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-      
-      /* Для грида карточек */
-      .row-equal-height {
-        display: flex;
-        flex-wrap: wrap;
-      }
-      
-      .row-equal-height .col-md-6 {
-        display: flex;
-      }
-      
-      /* Универсальные стили для переноса текста */
-      .card-body p,
-      .review-content,
-      .comment-content,
-      .truncate-text,
-      .review-card p,
-      [class*="content"] {
-        word-wrap: break-word !important;
-        overflow-wrap: break-word !important;
-        word-break: break-word !important;
-        white-space: normal !important;
-        max-width: 100%;
       }
     </style>
   </head>
 
   <body>
-    <!-- НАВИГАЦИОННОЕ МЕНЮ -->
-    <div class="main-nav">
-      <!-- Лого/название -->
-      <%= link_to "🎮 GameHub", root_path, style: "font-size: 1.2rem; font-weight: bold;" %>
-      
-      <!-- Основные ссылки -->
-      <span class="nav-divider">|</span>
-      <%= link_to "Все игры", games_path %>
-      <%= link_to "Разработчики", developers_path %>
-      
-      <!-- Коллекции (выпадающее меню) -->
-      <% if user_signed_in? %>
-        <div class="dropdown">
-          <button class="dropdown-btn">Коллекции ▽</button>
-          <div class="dropdown-content">
-            <%= link_to "Мои коллекции", collections_path %>
-            <%= link_to "Создать коллекцию", new_collection_path %>
-            <%= link_to "Добавить в коллекцию", "#", onclick: "alert('Выберите коллекцию на странице игры')" %>
-          </div>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+      <div class="container">
+        <%= link_to "🎮 NahichevanGameLab", root_path, class: "navbar-brand" %>
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <%= link_to "Игры", games_path, class: "nav-link" %>
+            </li>
+
+            <li class="nav-item">
+              <%= link_to "Пользователи", profiles_path, class: "nav-link" %>
+            </li>
+          </ul>
+
+          <ul class="navbar-nav">
+            <% if user_signed_in? %>
+              <li class="nav-item">
+                <%= link_to "Мой профиль", my_profile_path, class: "nav-link" %>
+              </li>
+
+              <li class="nav-item">
+                <%= link_to "Выйти",
+                  destroy_user_session_path,
+                  method: :delete,
+                  class: "nav-link text-danger"
+                %>
+              </li>
+            <% else %>
+              <li class="nav-item">
+                <%= link_to "Войти", new_user_session_path, class: "nav-link" %>
+              </li>
+
+              <li class="nav-item">
+                <%= link_to "Регистрация", new_user_registration_path, class: "nav-link" %>
+              </li>
+            <% end %>
+          </ul>
         </div>
-        
-        <%= link_to "Вишлист", wishlists_path, style: "color: #ffd700;" %>
-        
-        <!-- Друзья (выпадающее меню) -->
-        <div class="dropdown">
-          <button class="dropdown-btn">Друзья ▽</button>
-          <div class="dropdown-content">
-            <%= link_to "Мои друзья", friendships_path %>
-            <%= link_to "Заявки в друзья", pending_friendships_path %>
-          </div>
-        </div>
-        
-        <!-- Пользователи и профили -->
-        <%= link_to "Пользователи", profiles_path %>
-      <%= link_to "🎮 GameHub", root_path %>
-      
-      <!-- Основные ссылки -->
-      <%= link_to "Все игры", games_path %>
-      <%= link_to "Добавить игру", new_game_path %>
-      <%= link_to "Пользователи", profiles_path %>
-      
-      <!-- Ссылки фичи #3: Рецензии -->
-      <% if user_signed_in? %>
-        <%= link_to "Мои рецензии", my_reviews_path %>
-      <% end %>
-      
-      <!-- Пользовательские ссылки (правая часть) -->
-      <div class="user-info">
-        <% if user_signed_in? %>
-          <span style="margin-right: 10px;">Привет, <strong><%= current_user.email.split('@').first %></strong>!</span>
-          
-          <!-- Профиль пользователя (выпадающее меню) -->
-          <div class="dropdown" style="display: inline-block;">
-            <button class="dropdown-btn">Аккаунт ▽</button>
-            <div class="dropdown-content" style="right: 0;">
-              <%= link_to "👤 Мой профиль", my_profile_path %>
-              <%= link_to "⚙️ Настройки", edit_user_registration_path %>
-              <%= link_to "📊 Статистика", "#" %>
-              <hr style="margin: 5px 0;">
-              <%= link_to "🚪 Выйти", destroy_user_session_path, method: :delete, style: "color: #dc3545;" %>
-            </div>
-          </div>
-          
-        <% else %>
-          <%= link_to "🔐 Войти", new_user_session_path %>
-          <%= link_to "📝 Регистрация", new_user_registration_path %>
-          Привет, <%= current_user.email %>!
-          <%= link_to "Мой профиль", my_profile_path %>
-          <%= link_to "Выйти", destroy_user_session_path, method: :delete %>
-        <% else %>
-          <%= link_to "Войти", new_user_session_path %>
-          <%= link_to "Регистрация", new_user_registration_path %>
-        <% end %>
       </div>
-    </div>
-    
-    <!-- Уведомления -->
-    <% if notice %>
-      <div class="flash-notice">
-        <span>✅</span> <%= notice %>
-      </div>
-    <% end %>
-    
-    <% if alert %>
-      <div class="flash-alert">
-        <span>⚠️</span> <%= alert %>
-      </div>
-      <div class="flash-notice"><%= notice %></div>
-    <% end %>
-    
-    <% if alert %>
-      <div class="flash-alert"><%= alert %></div>
-    <% end %>
-    
-    <!-- Основной контент страницы -->
+    </nav>
+
+    <!-- FLASH -->
     <div class="container">
+      <% if notice %>
+        <div class="flash-notice"><%= notice %></div>
+      <% end %>
+
+      <% if alert %>
+        <div class="flash-alert"><%= alert %></div>
+      <% end %>
+
       <%= yield %>
     </div>
-    
+
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Простой скрипт для выпадающих меню -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.main-nav a');
-        
-        navLinks.forEach(link => {
-          if (link.getAttribute('href') === currentPath) {
-            link.style.background = 'rgba(255, 255, 255, 0.3)';
-            link.style.fontWeight = 'bold';
-          }
-        });
-      });
-    <!-- Bootstrap JS (если используешь Bootstrap компоненты) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- JavaScript для фичи #3 -->
-    <script>
-      // Функция для отправки оценки игры
-      function rateGame(gameId, score) {
-        fetch(`/games/${gameId}/rate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: JSON.stringify({ score: score })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.average_rating) {
-            // Обновляем отображение рейтинга
-            const ratingElement = document.querySelector(`#game-${gameId}-rating`);
-            if (ratingElement) {
-              ratingElement.textContent = `Рейтинг: ${data.average_rating}/10 (${data.rating_count} оценок)`;
-            }
-            
-            // Подсвечиваем выбранные звёзды
-            const stars = document.querySelectorAll(`#game-${gameId}-stars .bi-star`);
-            stars.forEach((star, index) => {
-              if (index < score) {
-                star.classList.remove('bi-star');
-                star.classList.add('bi-star-fill');
-              } else {
-                star.classList.remove('bi-star-fill');
-                star.classList.add('bi-star');
-              }
-            });
-            
-            alert('Ваша оценка сохранена!');
-          } else if (data.errors) {
-            alert('Ошибка: ' + data.errors.join(', '));
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Произошла ошибка при сохранении оценки');
-        });
-      }
-      
-      // Функция для лайка рецензии
-      function toggleLike(reviewId, gameId) {
-        const likeBtn = document.querySelector(`#like-btn-${reviewId}`);
-        const likeCount = document.querySelector(`#like-count-${reviewId}`);
-        
-        if (likeBtn.classList.contains('liked')) {
-          // Удаляем лайк
-          fetch(`/games/${gameId}/reviews/${reviewId}/likes/${likeBtn.dataset.likeId}`, {
-            method: 'DELETE',
-            headers: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            }
-          })
-          .then(response => response.json())
-          .then(data => {
-            likeBtn.classList.remove('liked');
-            likeBtn.innerHTML = '<i class="bi bi-heart"></i>';
-            likeCount.textContent = data.likes_count;
-          });
-        } else {
-          // Ставим лайк
-          fetch(`/games/${gameId}/reviews/${reviewId}/likes`, {
-            method: 'POST',
-            headers: {
-              'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-            }
-          })
-          .then(response => response.json())
-          .then(data => {
-            likeBtn.classList.add('liked');
-            likeBtn.innerHTML = '<i class="bi bi-heart-fill"></i>';
-            likeCount.textContent = data.likes_count;
-          });
-        }
-      }
-      
-      // Функция для отправки комментария
-      function submitComment(reviewId, gameId) {
-        const form = document.querySelector(`#comment-form-${reviewId}`);
-        const content = form.querySelector('textarea').value;
-        
-        if (!content.trim()) {
-          alert('Введите текст комментария');
-          return;
-        }
-        
-        fetch(`/reviews/${reviewId}/comments`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: JSON.stringify({ comment: { content: content } })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.id) {
-            // Добавляем новый комментарий в список
-            const commentsList = document.querySelector(`#comments-list-${reviewId}`);
-            const newComment = document.createElement('div');
-            newComment.className = 'comment-card';
-            newComment.innerHTML = `
-              <strong>${data.user_email || 'Вы'}</strong>
-              <small>только что</small>
-              <p>${data.content}</p>
-            `;
-            commentsList.appendChild(newComment);
-            
-            // Очищаем форму
-            form.querySelector('textarea').value = '';
-            
-            // Обновляем счётчик комментариев
-            const commentCount = document.querySelector(`#comment-count-${reviewId}`);
-            if (commentCount) {
-              commentCount.textContent = parseInt(commentCount.textContent) + 1;
-            }
-          } else if (data.errors) {
-            alert('Ошибка: ' + data.errors.join(', '));
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('Произошла ошибка при отправке комментария');
-        });
-      }
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
     </script>
   </body>
 </html>
+
