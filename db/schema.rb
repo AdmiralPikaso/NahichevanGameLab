@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_21_202918) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_21_213007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -58,8 +58,10 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_202918) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_collections_on_user_id"
+  end
+
   create_table "comments", force: :cascade do |t|
-    t.text "content"
+    t.text "content", null: false
     t.datetime "created_at", null: false
     t.bigint "review_id", null: false
     t.datetime "updated_at", null: false
@@ -122,7 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_202918) do
   create_table "profiles", force: :cascade do |t|
     t.text "bio"
     t.datetime "created_at", null: false
-    t.boolean "private", default: false
+    t.boolean "private"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id"
@@ -169,17 +171,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_21_202918) do
   add_foreign_key "collection_games", "collections"
   add_foreign_key "collection_games", "games"
   add_foreign_key "collections", "users"
-  add_foreign_key "friendships", "users"
-  add_foreign_key "friendships", "users", column: "friend_id"
   add_foreign_key "comments", "reviews"
   add_foreign_key "comments", "users"
+  add_foreign_key "friendships", "users"
+  add_foreign_key "friendships", "users", column: "friend_id"
   add_foreign_key "game_developers", "developers"
   add_foreign_key "game_developers", "games"
   add_foreign_key "likes", "reviews"
   add_foreign_key "likes", "users"
   add_foreign_key "profiles", "users"
-  add_foreign_key "wishlists", "games"
-  add_foreign_key "wishlists", "users"
   add_foreign_key "reviews", "games"
   add_foreign_key "reviews", "users"
+  add_foreign_key "wishlists", "games"
+  add_foreign_key "wishlists", "users"
 end
