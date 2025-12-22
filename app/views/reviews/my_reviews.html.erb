@@ -1,0 +1,60 @@
+<div class="container">
+  <h1>Мои рецензии</h1>
+  
+  <% if @reviews.empty? %>
+    <div class="alert alert-info">
+      У вас пока нет рецензий. <%= link_to "Напишите первую!", games_path %>
+    </div>
+  <% else %>
+    <div class="row">
+      <% @reviews.each do |review| %>
+        <div class="col-md-6 mb-4">
+          <div class="review-card card">
+            <div class="card-body">
+              <div class="review-header d-flex justify-content-between align-items-start">
+                <h5>
+                  <%= link_to review.game.title, game_path(review.game) %>
+                </h5>
+                <div class="review-rating">
+                  <span class="badge bg-warning">
+                    <%= review.rating %>/10
+                  </span>
+                </div>
+              </div>
+              
+              <h6><%= review.title %></h6>
+              <p class="text-muted small">
+                <%= review.created_at.strftime("%d.%m.%Y") %> •
+                <i class="bi bi-heart"></i> <%= review.likes.count %> •
+                <i class="bi bi-chat"></i> <%= review.comments.count %>
+              </p>
+              
+              <div class="review-content">
+                <p class="truncate-text"><%= review.content %></p>
+              </div>
+              
+              <div class="d-flex justify-content-between mt-3">
+                <%= link_to "Читать полностью", review_path(review), 
+                    class: "btn btn-sm btn-outline-primary" %>
+                
+                <div>
+                  <%= link_to "Редактировать", edit_review_path(review), 
+                      class: "btn btn-sm btn-outline-secondary" %>
+                   <%= button_to "Удалить", review_path(review), 
+                    method: :delete,
+                    form: { 
+                    data: { 
+                    turbo_confirm: "Удалить рецензию?" 
+                    },
+                    class: "d-inline"
+                    },
+                    class: "btn btn-sm btn-outline-danger" %>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
