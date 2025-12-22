@@ -1,0 +1,33 @@
+<div class="container">
+  <h1>Рецензии на игру: <%= @game.title %></h1>
+  
+  <%= link_to "Написать рецензию", new_game_review_path(@game), 
+      class: "btn btn-primary mb-4" %>
+  
+  <% if @reviews.empty? %>
+    <div class="alert alert-info">
+      Пока нет рецензий на эту игру. Будьте первым!
+    </div>
+  <% else %>
+    <% @reviews.each do |review| %>
+      <div class="review-card mb-3">
+        <div class="review-header">
+          <h5><%= review.title %></h5>
+          <div class="review-rating">
+            <%= review.rating %>/10
+          </div>
+        </div>
+        <p class="text-muted">
+          <%= review.user.email %> • <%= review.created_at.strftime("%d.%m.%Y") %>
+        </p>
+        <p style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;">
+          <%= truncate(review.content, length: 200) %>
+        </p>
+        <div class="mt-auto">
+        <%= link_to "Читать полностью", review_path(review), 
+            class: "btn btn-sm btn-outline-primary" %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+</div>
