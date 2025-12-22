@@ -1,8 +1,11 @@
 class ProfilesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user, only: [:show]
-  before_action :prepare_profile_data, only: [:show]
 
+  before_action :set_profile, only: [:show]
+  before_action :set_my_profile, only: [:me, :edit, :update]
+  before_action :prepare_collections, only: [:show]
+
+  # ====== СПИСОК ПУБЛИЧНЫХ ПРОФИЛЕЙ ======
   def index
     @profiles = Profile
       .joins(:user)
@@ -11,46 +14,57 @@ class ProfilesController < ApplicationController
       .order(created_at: :desc)
   end
 
+  # ====== ПРОСМОТР ЧУЖОГО ПРОФИЛЯ ======
   def show
     # вся логика вынесена в before_action
   end
 
+  # ====== МОЙ ПРОФИЛЬ ======
   def me
-    redirect_to profile_path(current_user.profile)
+    redirect_to profile_path(@profile)
+  end
+
+  # ====== РЕДАКТИРОВАНИЕ МОЕГО ПРОФИЛЯ ======
+  def edit
+  end
+
+  def update
+    if @profile.update(profile_params)
+      redirect_to my_profile_path, notice: "Профиль успешно обновлён"
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
 
   private
 
-  def set_user
-    @user = User
-      .includes(:profile, collections: :games)
-      .find(params[:id])
+  # ====== ЧУЖОЙ ПРОФИЛЬ ======
+  def set_profile
+    @profile = Profile.find(params[:id])
+    @user = @profile.user
 
-    @profile = @user.profile
-  rescue ActiveRecord::RecordNotFound
-    redirect_to profiles_path, alert: "Профиль не найден"
-  end
-
-  def prepare_profile_data
-    # --- статистика ---
     @collections_count = @user.collections.count
-    @games_count       = @user.collections.joins(:games).distinct.count(:game_id)
+    @games_count = @user.collections.joins(:games).distinct.count(:game_id)
 
-    # --- дружба ---
     if Friendship.table_exists?
       @friendship_status = current_user.friendship_status_with(@user)
-    else
-      @friendship_status = nil
     end
+  end
 
-    # --- доступ к коллекциям ---
+  # ====== МОЙ ПРОФИЛЬ ======
+  def set_my_profile
+    @profile = current_user.profile
+    @user = current_user
+  end
+
+  # ====== КОЛЛЕКЦИИ ======
+  def prepare_collections
     @can_view_collections =
       @user == current_user ||
-      (!@profile.private? && @friendship_status == :friends)
+      (!@profile.private? && current_user.friend_with?(@user))
 
-    # --- ВСЕГДА массивы ---
     @public_collections = []
-    @top_collections    = []
+    @top_collections = []
 
     return unless @can_view_collections
 
@@ -62,5 +76,9 @@ class ProfilesController < ApplicationController
       .select('collections.*, COUNT(games.id) AS games_count')
       .order('games_count DESC')
       .limit(3)
+  end
+
+  def profile_params
+    params.require(:profile).permit(:bio, :private, :avatar)
   end
 end
