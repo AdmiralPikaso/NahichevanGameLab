@@ -12,19 +12,9 @@ Rails.application.routes.draw do
   resources :profiles, 
     only: [:index, :show], 
     constraints: { id: /[0-9]+/ }
-
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
   # -------------------------
   # Игры
   # -------------------------
->>>>>>> Stashed changes
   resources :games do
     # Маршруты для добавления игр в коллекции прямо со страницы игры
     member do
@@ -53,43 +43,30 @@ Rails.application.routes.draw do
       get 'public', to: 'collections#public' # Публичные коллекции
       post 'quick_create', to: 'collections#quick_create' # Быстрое создание
     end
-<<<<<<< Updated upstream
     
     # Игры в коллекции
     resources :games, only: [:index], controller: 'collection_games'
-=======
 
     resources :games, only: [:index], controller: "collection_games"
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
   end
   
   # Отдельные маршруты для управления играми в коллекциях
   resources :collection_games, only: [:create, :destroy]
-<<<<<<< Updated upstream
   
   # Вишлист (список желаний)
   resources :wishlists, only: [:index, :create, :destroy] do
-=======
 
   # -------------------------
   # Вишлист (ИСПРАВЛЕНО: добавлен :show и :update)
   # -------------------------
   resources :wishlists, only: [:index, :show, :create, :update, :destroy] do
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
     collection do
       get 'my', to: 'wishlists#my'
+    end
+    
+    member do
+      # Для изменения приоритета
+      patch :update_priority
     end
     
     member do
@@ -166,7 +143,6 @@ Rails.application.routes.draw do
   match '/500', to: 'errors#internal_server_error', via: :all
   
   # Health check
-<<<<<<< Updated upstream
   get '/health', to: 'health#index'
 
   resources :wishlists, only: [:index, :create, :destroy] do
@@ -210,14 +186,6 @@ Rails.application.routes.draw do
 
   # Мои рецензии
   get 'my_reviews', to: 'reviews#my_reviews', as: :my_reviews
-=======
   # -------------------------
   get "/health", to: "health#index"
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 end
