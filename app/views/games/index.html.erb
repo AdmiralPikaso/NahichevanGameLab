@@ -156,7 +156,7 @@
         <div class="col">
           <div class="card h-100 game-card">
             <!-- Бейдж вишлиста -->
-            <% if user_signed_in? && current_user.in_wishlist?(game) %>
+            <% if user_signed_in? && current_user.wishlists.where(game: game).exists? %>
               <div class="position-absolute top-0 end-0 m-2">
                 <span class="badge bg-danger p-2">
                   <i class="bi bi-heart-fill"></i>
@@ -183,8 +183,9 @@
                   <!-- Кнопка быстрого добавления в вишлист -->
                   <% if user_signed_in? %>
                     <div class="quick-actions">
-                      <% if current_user.in_wishlist?(game) %>
-                        <%= link_to wishlist_path(current_user.wishlists.find_by(game: game)), 
+                      <% if current_user.wishlists.where(game: game).exists? %>
+                        <% wishlist_item = current_user.wishlists.find_by(game: game) %>
+                        <%= link_to wishlist_path(wishlist_item), 
                               method: :delete,
                               class: "btn btn-sm btn-danger",
                               data: { 
@@ -271,7 +272,7 @@
                 </div>
                 
                 <!-- Кнопка расширенного добавления в вишлист -->
-                <% if user_signed_in? && !current_user.in_wishlist?(game) %>
+                <% if user_signed_in? && !current_user.wishlists.where(game: game).exists? %>
                   <button type="button" 
                           class="btn btn-sm btn-outline-danger"
                           data-bs-toggle="modal" 
@@ -280,22 +281,13 @@
                     <i class="bi bi-heart"></i>
                   </button>
                 <% end %>
-              
-              <div class="mt-2">
-                <%= link_to "👁️ Просмотр", game, class: "btn btn-sm btn-outline-primary" %>
-                <%= link_to "✏️ Редактировать", edit_game_path(game), class: "btn btn-sm btn-outline-secondary" %>
-                <%= link_to "📝 Написать рецензию", new_game_review_path(game), class: "btn btn-sm btn-outline-success" %>
-                <%= link_to "🗑️ Удалить", game, 
-                    method: :delete, 
-                    class: "btn btn-sm btn-outline-danger",
-                    data: { confirm: "Удалить игру '#{game.title}'?" } %>
-              </div>
-            </div>
-          </div>
-        </div>
+              </div> <!-- Добавлен закрывающий тег -->
+            </div> <!-- Добавлен закрывающий тег для card-footer -->
+          </div> <!-- Добавлен закрывающий тег для card -->
+        </div> <!-- Добавлен закрывающий тег для col -->
         
         <!-- Модальное окно для добавления в вишлист (для каждой игры) -->
-        <% if user_signed_in? && !current_user.in_wishlist?(game) %>
+        <% if user_signed_in? && !current_user.wishlists.where(game: game).exists? %>
           <div class="modal fade" id="wishlistModal<%= game.id %>" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-sm">
               <div class="modal-content">

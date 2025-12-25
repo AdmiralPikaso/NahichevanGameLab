@@ -4,18 +4,20 @@ class Wishlist < ApplicationRecord
   
   validates :user_id, uniqueness: { scope: :game_id, message: "уже есть в вашем вишлисте" }
   
-  # Исправленный enum - используйте либо целые числа, либо строки
+  # Исправленный enum
   enum :priority, {
     low: 0,
     medium: 1,
-    high: 2,
-    must_have: 3
-  }, default: :medium
+    high: 2
+  }, default: :medium, suffix: true
   
   # Scopes
   scope :sorted_by_priority, -> { order(priority: :desc, created_at: :desc) }
-  scope :with_high_priority, -> { where(priority: [:high, :must_have]) }
+  scope :with_high_priority, -> { where(priority: :high) }
   scope :recently_added, -> { where("created_at >= ?", 30.days.ago) }
+  
+  # Делегирование для удобства
+  delegate :title, :cover_url, :metacritic_score, :release_date, to: :game
   
   # Метод для получения цвета приоритета
   def priority_color
@@ -23,11 +25,9 @@ class Wishlist < ApplicationRecord
     when 'low'
       'secondary'
     when 'medium'
-      'info'
+      'primary'
     when 'high'
       'warning'
-    when 'must_have'
-      'danger'
     else
       'light'
     end
@@ -42,8 +42,6 @@ class Wishlist < ApplicationRecord
       '↔️'
     when 'high'
       '⬆️'
-    when 'must_have'
-      '🔥'
     else
       '📌'
     end
@@ -58,10 +56,18 @@ class Wishlist < ApplicationRecord
       'Средний'
     when 'high'
       'Высокий'
-    when 'must_have'
-      'Обязательно'
     else
       'Не указан'
     end
+  end
+  
+  # Метод для проверки наличия игры в вишлисте пользователя
+  def self.in_wishlist?(user, game)
+    user.wishlists.exists?(game: game)
+  end
+  
+  # Метод для получения полного имени приоритета с иконкой
+  def priority_full_name
+    "#{priority_icon} #{priority_name}"
   end
 end

@@ -140,10 +140,10 @@
                           <ul class="dropdown-menu">
                             <% Wishlist.priorities.keys.each do |p| %>
                               <li>
-                                <%= form_with(url: wishlist_path(wishlist), method: :patch, 
-                                              class: "dropdown-item") do |form| %>
-                                  <%= hidden_field_tag :wishlist_priority, p %>
-                                  <button type="submit" class="btn btn-link p-0 border-0 text-start w-100">
+                                <%= form_with(url: update_priority_wishlist_path(wishlist), method: :patch, 
+                                              class: "dropdown-item p-0") do |form| %>
+                                  <%= hidden_field_tag :priority, p %>
+                                  <button type="submit" class="btn btn-link p-2 border-0 text-start w-100">
                                     <%= Wishlist.new(priority: p).priority_icon %>
                                     <%= p.humanize %>
                                   </button>
@@ -153,26 +153,16 @@
                           </ul>
                         </div>
                         
-                        <!-- Добавить в коллекцию -->
-                        <%= link_to "📁", "#", 
-                              class: "btn btn-outline-success",
-                              data: { 
-                                bs_toggle: "modal", 
-                                bs_target: "#addToCollectionModal",
-                                game_title: game.title,
-                                game_id: game.id
-                              },
-                              title: "Добавить в коллекцию" %>
-                        
                         <!-- Удалить из вишлиста -->
-                        <%= link_to "🗑️", 
-                              wishlist_path(wishlist), 
-                              method: :delete,
-                              data: { 
-                                confirm: "Удалить '#{game.title}' из вишлиста?" 
-                              },
-                              class: "btn btn-outline-danger",
-                              title: "Удалить из вишлиста" %>
+                        <%= form_with(url: wishlist_path(wishlist), method: :delete, 
+                              class: "d-inline", id: "delete-form-#{wishlist.id}") do %>
+                          <button type="submit" 
+                                  class="btn btn-outline-danger"
+                                  onclick="return confirm('Удалить &quot;<%= game.title %>&quot; из вишлиста?');"
+                                  title="Удалить из вишлиста">
+                            🗑️
+                          </button>
+                        <% end %>
                       </div>
                     </td>
                   </tr>
@@ -251,6 +241,7 @@
   </div>
 </div>
 
+<!-- JavaScript для обработки действий -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Обработка модального окна добавления в коллекцию
@@ -271,17 +262,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обновляем action формы при изменении выбора коллекции
     const collectionSelect = document.querySelector('#addToCollectionModal select[name="collection_id"]');
-    collectionSelect.addEventListener('change', function() {
-      const form = document.getElementById('addToCollectionForm');
-      const gameId = document.getElementById('modalGameId').value;
-      form.action = `/collections/${this.value}/add_game/${gameId}`;
-    });
+    if (collectionSelect) {
+      collectionSelect.addEventListener('change', function() {
+        const form = document.getElementById('addToCollectionForm');
+        const gameId = document.getElementById('modalGameId').value;
+        form.action = `/collections/${this.value}/add_game/${gameId}`;
+      });
+    }
     
     // Обработка кнопки отправки
-    document.getElementById('submitAddToCollection').addEventListener('click', function() {
-      document.getElementById('addToCollectionForm').submit();
-    });
+    const submitBtn = document.getElementById('submitAddToCollection');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function() {
+        document.getElementById('addToCollectionForm').submit();
+      });
+    }
   }
+  
+  // Проверка поддержки JavaScript для форм
+  console.log('JavaScript загружен, формы должны работать');
   
   // Подсветка строк таблицы
   const tableRows = document.querySelectorAll('table tbody tr');
@@ -294,6 +293,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 });
+
+// Функция для проверки работы JavaScript
+function testDelete() {
+  console.log('Delete form submit работает');
+  return true;
+}
 </script>
 
 <style>
@@ -311,5 +316,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .btn-group .dropdown-toggle::after {
   margin-left: 0.5em;
+}
+
+.dropdown-menu .dropdown-item {
+  padding: 0;
+}
+
+.dropdown-menu .dropdown-item button {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 16px;
+}
+
+.dropdown-menu .dropdown-item button:hover {
+  background-color: #f8f9fa;
 }
 </style>

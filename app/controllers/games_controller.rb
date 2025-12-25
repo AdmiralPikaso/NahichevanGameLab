@@ -33,7 +33,8 @@ class GamesController < ApplicationController
   def show
     # Информация о вишлисте для текущего пользователя
     if user_signed_in?
-      @in_wishlist = current_user.in_wishlist?(@game)
+      # ЗАМЕНА: используем exists? вместо in_wishlist?
+      @in_wishlist = current_user.wishlists.exists?(game: @game)
       @wishlist_item = current_user.wishlists.find_by(game: @game)
     end
     
@@ -99,7 +100,7 @@ class GamesController < ApplicationController
     notes = params[:notes]
     
     # Проверяем, не добавлена ли уже игра
-    if current_user.in_wishlist?(@game)
+    if current_user.wishlists.exists?(game: @game)
       respond_to do |format|
         format.html { redirect_back fallback_location: @game, alert: 'Игра уже в вашем вишлисте' }
         format.json { render json: { error: 'Игра уже в вишлисте' }, status: :unprocessable_entity }
@@ -159,15 +160,15 @@ class GamesController < ApplicationController
       end
     else
       respond_to do |format|
-        format.html { redirect_back fallback_location: @game, alert: 'Ошибка при удалении из вишлиста' }
+        format.html { redirect_back fallback_location: @game, alert: 'Ошибка при удаления из вишлиста' }
         format.json { render json: { error: 'Ошибка удаления' }, status: :unprocessable_entity }
-        format.js   { render js: "alert('Ошибка при удалении из вишлиста');" }
+        format.js   { render js: "alert('Ошибка при удаления из вишлиста');" }
       end
     end
   end
   
   def toggle_wishlist
-    if current_user.in_wishlist?(@game)
+    if current_user.wishlists.exists?(game: @game)
       remove_from_wishlist
     else
       add_to_wishlist
@@ -177,13 +178,12 @@ class GamesController < ApplicationController
   def wishlisted_games
     redirect_to wishlists_path unless user_signed_in?
     
-    @games = current_user.wishlist_games
-                         .includes(:developers)
-                         .order('wishlists.priority DESC, wishlists.created_at DESC')
+    @games = current_user.wishlists.includes(game: [:developers]).map(&:game)
     
     # Группировка по приоритету
     @grouped_games = @games.group_by do |game|
-      current_user.wishlist_priority_for(game) || 'medium'
+      wishlist_item = current_user.wishlists.find_by(game: game)
+      wishlist_item&.priority || 'medium'
     end
   end
   
@@ -220,18 +220,18 @@ class GamesController < ApplicationController
   end
   
   def apply_wishlist_filter
-    case params[:filter]
-    when 'in_my_wishlist'
-      @games = @games.joins(:wishlists).where(wishlists: { user_id: current_user.id })
-    when 'not_in_my_wishlist'
-      @games = @games.where.not(
-        id: current_user.wishlists.select(:game_id)
-      )
-    when 'high_priority'
+  case params[:filter]
+  when 'in_my_wishlist'
+    @games = @games.joins(:wishlists).where(wishlists: { user_id: current_user.id })
+  when 'not_in_my_wishlist'
+    @games = @games.where.not(
+      id: current_user.wishlists.select(:game_id)
+      ) 
+      when 'high_priority'
       @games = @games.joins(:wishlists)
                      .where(wishlists: { 
                        user_id: current_user.id, 
-                       priority: ['high', 'must_have'] 
+                       priority: 'high'  # Убрали 'must_have'
                      })
     end
   end
