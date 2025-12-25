@@ -73,7 +73,7 @@ Rails.application.routes.draw do
   resources :collection_games, only: [:create, :destroy]
 
   # -------------------------
-  # Вишлист (ИСПРАВЛЕНО: добавлен :show и :update)
+  # Вишлист
   # -------------------------
   resources :wishlists, only: [:index, :show, :create, :update, :destroy] do
     collection do
@@ -84,12 +84,6 @@ Rails.application.routes.draw do
     member do
       # Для изменения приоритета
       patch :update_priority
-  # Вишлист
-  # -------------------------
-  resources :wishlists, only: [:index, :create, :destroy] do
-    collection do
-      get  :my
-      post :quick_add
     end
   end
 
@@ -100,12 +94,6 @@ Rails.application.routes.draw do
     collection do
       get :pending
       get :suggestions
-    end
-
-    member do
-      patch :accept
-      patch :reject
-    end
     end
 
     member do
@@ -134,17 +122,6 @@ Rails.application.routes.draw do
       resources :games, only: [:index]
     end
   end
-
-  # -------------------------
-  # Ошибки
-  # -------------------------
-  match "/404", to: "errors#not_found", via: :all
-  match "/500", to: "errors#internal_server_error", via: :all
-
-  # -------------------------
-  # Health check
-  # -------------------------
-  get "/health", to: "health#index"
 
   # -------------------------
   # Ошибки
