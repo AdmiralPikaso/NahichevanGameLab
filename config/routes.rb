@@ -21,8 +21,6 @@ Rails.application.routes.draw do
   # -------------------------
   resources :profiles, only: [:index, :show], constraints: { id: /\d+/ }
 
-  # УБРАЛ ЛИШНЮЮ СТРОКУ: resources :games
-  
   # -------------------------
   # Игры
   # -------------------------
@@ -69,13 +67,23 @@ Rails.application.routes.draw do
       post :quick_create
     end
 
-    # УБРАЛ ДУБЛИРУЮЩИЙСЯ КОД
-    # resources :games, only: [:index], controller: "collection_games"
+    resources :games, only: [:index], controller: "collection_games"
   end
 
   resources :collection_games, only: [:create, :destroy]
 
   # -------------------------
+  # Вишлист (ИСПРАВЛЕНО: добавлен :show и :update)
+  # -------------------------
+  resources :wishlists, only: [:index, :show, :create, :update, :destroy] do
+    collection do
+      get  :my
+      post :quick_add
+    end
+    
+    member do
+      # Для изменения приоритета
+      patch :update_priority
   # Вишлист
   # -------------------------
   resources :wishlists, only: [:index, :create, :destroy] do
@@ -92,6 +100,12 @@ Rails.application.routes.draw do
     collection do
       get :pending
       get :suggestions
+    end
+
+    member do
+      patch :accept
+      patch :reject
+    end
     end
 
     member do
@@ -132,6 +146,14 @@ Rails.application.routes.draw do
   # -------------------------
   get "/health", to: "health#index"
 
-  # УБРАЛ ВЕСЬ ДУБЛИРУЮЩИЙСЯ КОД, КОТОРЫЙ БЫЛ ЗДЕСЬ
-  # (все строки после этого комментария нужно удалить)
+  # -------------------------
+  # Ошибки
+  # -------------------------
+  match "/404", to: "errors#not_found", via: :all
+  match "/500", to: "errors#internal_server_error", via: :all
+
+  # -------------------------
+  # Health check
+  # -------------------------
+  get "/health", to: "health#index"
 end

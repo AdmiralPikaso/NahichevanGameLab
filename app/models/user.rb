@@ -143,8 +143,11 @@ class User < ApplicationRecord
   # Методы для вишлиста
   
   
+  def in_wishlist?(game)
+    wishlists.exists?(game: game)
+  end
+
   def wishlist_priority_for(game)
     wishlists.find_by(game_id: game.id)&.priority
   end
-
 end

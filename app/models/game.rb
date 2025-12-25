@@ -10,6 +10,11 @@ class Game < ApplicationRecord
     }, 
     allow_nil: true                          
   
+  has_one_attached :cover
+  
+  has_many :wishlists
+  has_many :collections
+
   has_many :game_developers, dependent: :destroy
   has_many :developers, through: :game_developers
   has_many :reviews, dependent: :destroy
@@ -46,6 +51,7 @@ class Game < ApplicationRecord
     stats = wishlist_stats
     stats.max_by { |_, count| count }&.first if stats.any?
   end
+
   def rating_count
     ratings.count
   end

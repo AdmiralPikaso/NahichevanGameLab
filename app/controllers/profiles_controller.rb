@@ -23,8 +23,46 @@ class ProfilesController < ApplicationController
 
   # 📌 ПРОСМОТР ПРОФИЛЯ
   def show
-    prepare_collections
-    prepare_stats
+    unless @user
+      redirect_to profiles_path, alert: "Пользователь не найден"
+      return
+    end
+
+    @collections_count ||= 0
+    @games_count ||= 0
+
+    @profile = @user.profile
+    unless @profile
+      redirect_to profiles_path, alert: "Профиль не найден"
+      return
+    end
+    
+    if @profile.private? && @user != current_user
+      redirect_to profiles_path, alert: "Этот профиль приватный"
+      return
+    end
+  
+    # Статистика пользователя
+    @user_stats = calculate_user_stats(@user)
+    
+    # Популярные коллекции (первые 3 по количеству игр)
+    @top_collections = @user.collections
+                           .left_joins(:games)
+                           .group('collections.id')
+                           .select('collections.*, COUNT(games.id) as games_count')
+                           .order('games_count DESC')
+                           .limit(3)
+    
+    # Проверяем статус дружбы (если не текущий пользователь)
+    if @user != current_user
+      @friendship_status = get_friendship_status(@user)
+      
+      # Может ли пользователь просматривать коллекции?
+      @can_view_collections = !@profile.private? || @friendship_status == :friends
+    else
+      @friendship_status = nil
+      @can_view_collections = true
+    end
   end
 
   # 📌 МОЙ ПРОФИЛЬ
