@@ -15,7 +15,10 @@ Rails.application.routes.draw do
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   # -------------------------
@@ -58,6 +61,9 @@ Rails.application.routes.draw do
 
     resources :games, only: [:index], controller: "collection_games"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -76,11 +82,19 @@ Rails.application.routes.draw do
   # -------------------------
   resources :wishlists, only: [:index, :show, :create, :update, :destroy] do
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
     collection do
       get 'my', to: 'wishlists#my'
+    end
+    
+    member do
+      # Для изменения приоритета
+      patch :update_priority
     end
     
     member do
@@ -200,6 +214,9 @@ Rails.application.routes.draw do
   # -------------------------
   get "/health", to: "health#index"
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes

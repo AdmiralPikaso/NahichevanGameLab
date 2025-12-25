@@ -143,8 +143,11 @@ class User < ApplicationRecord
   end
   
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
   
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
   def in_wishlist?(game)
@@ -152,6 +155,9 @@ class User < ApplicationRecord
   end
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
