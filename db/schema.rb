@@ -128,7 +128,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_22_140038) do
   create_table "profiles", force: :cascade do |t|
     t.text "bio"
     t.datetime "created_at", null: false
-    t.boolean "private", default: false
+    t.boolean "private"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_profiles_on_user_id"

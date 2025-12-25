@@ -1,4 +1,5 @@
 class Game < ApplicationRecord
+  has_one_attached :cover
   validates :title, presence: true, uniqueness: true
   validates :release_date, presence: true
   validates :metacritic_score, 
@@ -50,7 +51,7 @@ class Game < ApplicationRecord
     stats = wishlist_stats
     stats.max_by { |_, count| count }&.first if stats.any?
   end
-  
+
   def rating_count
     ratings.count
   end

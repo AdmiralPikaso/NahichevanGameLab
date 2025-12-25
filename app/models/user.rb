@@ -106,7 +106,9 @@ class User < ApplicationRecord
     !pending_request_to?(other_user) && 
     !pending_request_from?(other_user)
   end
-
+ def in_wishlist?(game)
+    wishlists.where(game_id: game.id).exists?
+  end
   private
   
   def create_profile
@@ -123,6 +125,8 @@ class User < ApplicationRecord
     Collection.create_default_collections_for_user(self)
   end
 
+ 
+
   def collections_statistics
   {
     total_collections: collections.count,
@@ -137,9 +141,7 @@ class User < ApplicationRecord
   has_many :wishlist_games, through: :wishlists, source: :game
   
   # Методы для вишлиста
-  def in_wishlist?(game)
-    wishlists.where(game_id: game.id).exists?
-  end
+  
   
   def in_wishlist?(game)
     wishlists.exists?(game: game)
