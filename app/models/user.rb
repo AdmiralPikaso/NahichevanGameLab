@@ -142,12 +142,18 @@ class User < ApplicationRecord
     wishlists.where(game_id: game.id).exists?
   end
   
+<<<<<<< Updated upstream
 =======
   
+=======
+>>>>>>> Stashed changes
   def in_wishlist?(game)
     wishlists.exists?(game: game)
   end
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   def wishlist_priority_for(game)
     wishlists.find_by(game_id: game.id)&.priority

@@ -14,7 +14,10 @@ Rails.application.routes.draw do
     constraints: { id: /[0-9]+/ }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   # -------------------------
   # Игры
   # -------------------------
@@ -54,6 +57,9 @@ Rails.application.routes.draw do
 =======
 
     resources :games, only: [:index], controller: "collection_games"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
   end
   
@@ -69,9 +75,17 @@ Rails.application.routes.draw do
   # Вишлист (ИСПРАВЛЕНО: добавлен :show и :update)
   # -------------------------
   resources :wishlists, only: [:index, :show, :create, :update, :destroy] do
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     collection do
       get 'my', to: 'wishlists#my'
+    end
+    
+    member do
+      # Для изменения приоритета
+      patch :update_priority
     end
     
     member do
@@ -185,5 +199,8 @@ Rails.application.routes.draw do
 =======
   # -------------------------
   get "/health", to: "health#index"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 end
