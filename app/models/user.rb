@@ -137,7 +137,6 @@ class User < ApplicationRecord
   has_many :wishlist_games, through: :wishlists, source: :game
   
   # Методы для вишлиста
-<<<<<<< Updated upstream
   def in_wishlist?(game)
     wishlists.where(game_id: game.id).exists?
   end

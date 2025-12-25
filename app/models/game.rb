@@ -44,6 +44,7 @@ class Game < ApplicationRecord
   def most_common_wishlist_priority
     stats = wishlist_stats
     stats.max_by { |_, count| count }&.first if stats.any?
+  end
   
   def rating_count
     ratings.count

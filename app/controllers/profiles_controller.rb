@@ -28,7 +28,10 @@ class ProfilesController < ApplicationController
       redirect_to profiles_path, alert: "Пользователь не найден"
       return
     end
-    
+
+    @collections_count ||= 0
+    @games_count ||= 0
+
     @profile = @user.profile
     unless @profile
       redirect_to profiles_path, alert: "Профиль не найден"
