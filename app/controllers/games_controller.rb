@@ -4,9 +4,9 @@ class GamesController < ApplicationController
   before_action :set_current_user_for_models, only: [:index, :show]
   
   def index
-    # Базовый запрос с предзагрузкой
-    @games = Game.includes(:developers, :wishlists, :collections)
-                 .with_attached_cover
+    # Базовый запрос с предзагрузкой ВСЕГО, включая cover attachment
+    @games = Game.with_attached_cover
+                 .includes(:developers, :wishlists, :collections)
                  .order(created_at: :desc)
     
     # Поиск
@@ -33,7 +33,6 @@ class GamesController < ApplicationController
   def show
     # Информация о вишлисте для текущего пользователя
     if user_signed_in?
-      # ЗАМЕНА: используем exists? вместо in_wishlist?
       @in_wishlist = current_user.wishlists.exists?(game: @game)
       @wishlist_item = current_user.wishlists.find_by(game: @game)
     end
@@ -190,7 +189,9 @@ class GamesController < ApplicationController
   private
   
   def set_game
-    @game = Game.includes(:developers, :wishlists, :collections).find(params[:id])
+    @game = Game.with_attached_cover
+                .includes(:developers, :wishlists, :collections)
+                .find(params[:id])
   rescue ActiveRecord::RecordNotFound
     redirect_to games_path, alert: 'Игра не найдена'
   end
@@ -202,13 +203,12 @@ class GamesController < ApplicationController
       :release_date, 
       :cover_url, 
       :metacritic_score,
-      developer_ids: []  # Для множественного выбора разработчиков
+      :cover,  # Для загрузки файла через Active Storage
+      developer_ids: []
     )
   end
   
   def set_current_user_for_models
-    # Устанавливаем текущего пользователя в Thread local storage
-    # для использования в моделях (например, game.in_current_user_wishlist?)
     Thread.current[:current_user] = current_user
   end
   
@@ -220,18 +220,18 @@ class GamesController < ApplicationController
   end
   
   def apply_wishlist_filter
-  case params[:filter]
-  when 'in_my_wishlist'
-    @games = @games.joins(:wishlists).where(wishlists: { user_id: current_user.id })
-  when 'not_in_my_wishlist'
-    @games = @games.where.not(
-      id: current_user.wishlists.select(:game_id)
+    case params[:filter]
+    when 'in_my_wishlist'
+      @games = @games.joins(:wishlists).where(wishlists: { user_id: current_user.id })
+    when 'not_in_my_wishlist'
+      @games = @games.where.not(
+        id: current_user.wishlists.select(:game_id)
       ) 
-      when 'high_priority'
+    when 'high_priority'
       @games = @games.joins(:wishlists)
                      .where(wishlists: { 
                        user_id: current_user.id, 
-                       priority: 'high'  # Убрали 'must_have'
+                       priority: 'high'
                      })
     end
   end
@@ -262,12 +262,10 @@ class GamesController < ApplicationController
   end
   
   def can_edit_game?
-    # Базовая проверка прав - можно расширить
-    user_signed_in? # && (current_user.admin? || current_user == @game.user если будет связь)
+    user_signed_in?
   end
   
   def can_delete_game?
-    # Базовая проверка прав - можно расширить
-    user_signed_in? # && current_user.admin?
+    user_signed_in?
   end
 end
