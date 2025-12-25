@@ -28,6 +28,7 @@ class ProfilesController < ApplicationController
       return
     end
 
+    # Инициализируем счетчики
     @collections_count ||= 0
     @games_count ||= 0
 
@@ -42,8 +43,15 @@ class ProfilesController < ApplicationController
       return
     end
   
-    # Статистика пользователя
-    @user_stats = calculate_user_stats(@user)
+    # Подготавливаем статистику пользователя
+    prepare_stats
+    
+    # Статистика пользователя (используем prepare_stats вместо calculate_user_stats)
+    # Получаем значения из @collections_count и @games_count
+    @user_stats = {
+      collections_count: @collections_count,
+      games_count: @games_count
+    }
     
     # Популярные коллекции (первые 3 по количеству игр)
     @top_collections = @user.collections
@@ -55,7 +63,12 @@ class ProfilesController < ApplicationController
     
     # Проверяем статус дружбы (если не текущий пользователь)
     if @user != current_user
-      @friendship_status = get_friendship_status(@user)
+      # Получаем статус дружбы, если доступна модель Friendship
+      if Friendship.table_exists? && @user.respond_to?(:friendship_status_with)
+        @friendship_status = current_user.friendship_status_with(@user)
+      else
+        @friendship_status = get_friendship_status(@user) rescue nil
+      end
       
       # Может ли пользователь просматривать коллекции?
       @can_view_collections = !@profile.private? || @friendship_status == :friends
@@ -63,6 +76,9 @@ class ProfilesController < ApplicationController
       @friendship_status = nil
       @can_view_collections = true
     end
+    
+    # Подготавливаем коллекции для отображения
+    prepare_collections
   end
 
   # 📌 МОЙ ПРОФИЛЬ
@@ -97,9 +113,9 @@ class ProfilesController < ApplicationController
   end
 
   def prepare_collections
-    @can_view_collections =
+    @can_view_collections ||=
       @user == current_user ||
-      (!@profile.private? && current_user.friend_with?(@user))
+      (!@profile.private? && current_user.friend_with?(@user)) rescue false
 
     @public_collections = []
     @top_collections = []
@@ -120,9 +136,33 @@ class ProfilesController < ApplicationController
     @collections_count = @user.collections.count
     @games_count = @user.collections.joins(:games).distinct.count(:game_id)
 
-    if Friendship.table_exists?
-      @friendship_status = current_user.friendship_status_with(@user)
+    # Инициализируем статус дружбы, если нужно
+    if @user != current_user
+      if Friendship.table_exists?
+        @friendship_status ||= current_user.friendship_status_with(@user) rescue nil
+      end
     end
+  end
+
+  # Метод для определения статуса дружбы (если используется в коде)
+  def get_friendship_status(user)
+    # Проверяем, является ли пользователь другом
+    if Friendship.table_exists? && current_user.friends.include?(user)
+      return :friends
+    end
+    
+    # Проверяем, отправлена ли заявка
+    if Friendship.table_exists? && current_user.sent_friend_requests.where(friend: user).exists?
+      return :request_sent
+    end
+    
+    # Проверяем, получена ли заявка
+    if Friendship.table_exists? && current_user.received_friend_requests.where(user: user).exists?
+      return :request_received
+    end
+    
+    # Если ничего не подошло
+    return :none
   end
 
   def profile_params

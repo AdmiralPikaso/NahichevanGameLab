@@ -30,75 +30,61 @@
                 <small class="text-muted">Игр всего</small>
               </div>
             </div>
-          </div>
-
-          <% if @user != current_user %>
-            <div class="mt-3">
-              <% case @friendship_status %>
-              <% when :friends %>
-                <span class="badge bg-success mb-2">Друг</span>
-              <% when :request_sent %>
-                <span class="badge bg-warning text-dark mb-2">Заявка отправлена</span>
-              <% when :request_received %>
-                <span class="badge bg-info mb-2">Ожидает ответа</span>
-              <% else %>
-                <%= link_to "Добавить в друзья",
-                      friendships_path(friend_id: @user.id),
-                      method: :post,
+            
+            <!-- Кнопки действий -->
+            <% if @user != current_user %>
+              <div class="mt-3">
+                <% case @friendship_status %>
+                <% when :friends %>
+                  <span class="badge bg-success mb-2">Друг</span>
+                <% when :request_sent %>
+                  <span class="badge bg-warning text-dark mb-2">Заявка отправлена</span>
+                <% when :request_received %>
+                  <span class="badge bg-info mb-2">Ожидает ответа</span>
+                <% else %>
+                  <%= link_to "Добавить в друзья",
+                        friendships_path(friend_id: @user.id),
+                        method: :post,
+                        class: "btn btn-primary w-100" %>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="mt-3">
+                <%= link_to "Редактировать профиль", edit_my_profile_path,
+                      class: "btn btn-info w-100 mb-2" %>
+                <%= link_to "Мои коллекции", collections_path,
+                      class: "btn btn-success w-100 mb-2" %>
+                <%= link_to "Мои друзья", friendships_path,
                       class: "btn btn-primary w-100" %>
+              </div>
+            <% end %>
+            
+            <hr>
+            <small class="text-muted">
+              Зарегистрирован: <%= l(@user.created_at, format: :long) %><br>
+              <% if @user.respond_to?(:current_sign_in_at) && @user.current_sign_in_at %>
+                Последний вход: <%= l(@user.current_sign_in_at, format: :short) %>
               <% end %>
-            </div>
-          <% else %>
-            <div class="mt-3">
-              <%= link_to "Редактировать профиль", edit_my_profile_path,
-                    class: "btn btn-info w-100 mb-2" %>
-              <%= link_to "Мои коллекции", collections_path,
-                    class: "btn btn-success w-100" %>
-              <%= link_to "Мои друзья",
-          friendships_path,
-          class: "btn btn-primary w-100" %>
-            </div>
-          <% end %>
-
+            </small>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- ПРАВАЯ КОЛОНКА -->
-    <div class="col-md-8">
-
-      <!-- О ПОЛЬЗОВАТЕЛЕ -->
-      <div class="card mb-4">
-        <div class="card-header">
-          <h5 class="mb-0">О пользователе</h5>
-        </div>
-        <div class="card-body">
-          <% if @profile.bio.present? %>
-            <p class="lead"><%= @profile.bio %></p>
-          <% else %>
-            <p class="text-muted">
-              <%= @user == current_user ?
-                "Заполните описание профиля" :
-                "Пользователь не добавил описание" %>
-            </p>
-          <% end %>
-        </div>
-      </div>
-
-      <!-- КОЛЛЕКЦИИ -->
-      <% if @can_view_collections %>
+      
+      <!-- ПРАВАЯ КОЛОНКА -->
+      <div class="col-md-8">
+        <!-- О ПОЛЬЗОВАТЕЛЕ -->
         <div class="card mb-4">
           <div class="card-header">
-            <h5 class="mb-0">Коллекции</h5>
+            <h5 class="mb-0">О пользователе</h5>
           </div>
           <div class="card-body">
-            <% if @user.profile.bio.present? %>
-              <p class="lead"><%= @user.profile.bio %></p>
+            <% if @profile.bio.present? %>
+              <p class="lead"><%= @profile.bio %></p>
             <% else %>
               <p class="text-muted">
-                <%= @user == current_user ? 
-                    "Расскажите о себе в настройках профиля!" : 
-                    "Пользователь еще не добавил информацию о себе." %>
+                <%= @user == current_user ?
+                  "Заполните описание профиля" :
+                  "Пользователь не добавил описание" %>
               </p>
             <% end %>
             
@@ -121,12 +107,11 @@
           </div>
         </div>
         
-        <!-- Коллекции пользователя -->
-        <% if @can_view_collections && @public_collections && @public_collections.any? %>
+        <!-- КОЛЛЕКЦИИ -->
+        <% if @can_view_collections %>
           <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">Коллекции пользователя</h5>
-              <span class="badge bg-primary"><%= @collections_count || 0 %></span>
+            <div class="card-header">
+              <h5 class="mb-0">Коллекции</h5>
             </div>
             <div class="card-body">
               <% if @top_collections && @top_collections.any? %>
@@ -160,14 +145,16 @@
                           class: "btn btn-outline-secondary btn-sm" %>
                   </div>
                 <% end %>
-              </div>
-            <% else %>
-              <p class="text-muted text-center">Коллекций пока нет</p>
-            <% end %>
-
+              <% else %>
+                <p class="text-muted text-center py-3">
+                  У пользователя пока нет коллекций
+                </p>
+              <% end %>
+            </div>
           </div>
-        </div>
-      <% else %>
+        <% end %>
+        
+        <!-- ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ -->
         <div class="card">
           <div class="card-header">
             <h5 class="mb-0">Активность</h5>
@@ -213,5 +200,5 @@
       <!-- Исправленная ссылка: используем root_path или :back вместо users_path -->
       <%= link_to "Вернуться на главную", root_path, class: "btn btn-primary" %>
     </div>
-  </div>
+  <% end %>
 </div>
