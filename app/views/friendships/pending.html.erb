@@ -20,7 +20,8 @@
     <div class="card-body">
       <% if @incoming_requests.any? %>
         <div class="row">
-          <% @incoming_requests.each do |user| %>
+          <% @incoming_requests.each do |friendship| %>
+            <% user = friendship.user %>
             <div class="col-md-6 mb-3">
               <div class="card">
                 <div class="card-body">
@@ -41,13 +42,15 @@
                       </div>
                     </div>
                     <div>
+                      <!-- Используем accept_friendship_path вместо friendship_path -->
                       <%= link_to "Принять", 
-                            friendship_path(user), 
+                            accept_friendship_path(friendship), 
                             method: :patch,
                             class: "btn btn-success btn-sm me-1" %>
+                      <!-- Используем reject_friendship_path вместо friendship_path -->
                       <%= link_to "Отклонить", 
-                            friendship_path(user), 
-                            method: :delete,
+                            reject_friendship_path(friendship), 
+                            method: :patch,
                             data: { confirm: "Отклонить заявку от #{user.email}?" },
                             class: "btn btn-danger btn-sm" %>
                     </div>
@@ -55,7 +58,7 @@
                 </div>
                 <div class="card-footer bg-transparent">
                   <small class="text-muted">
-                    Заявка отправлена: <%= time_ago_in_words(Friendship.find_by(user_id: user.id, friend_id: current_user.id)&.created_at || Time.current) %> назад
+                    Заявка отправлена: <%= time_ago_in_words(friendship.created_at) %> назад
                   </small>
                 </div>
               </div>
@@ -95,7 +98,8 @@
               </tr>
             </thead>
             <tbody>
-              <% @outgoing_requests.each do |user| %>
+              <% @outgoing_requests.each do |friendship| %>
+                <% user = friendship.friend %>
                 <tr>
                   <td>
                     <div class="d-flex align-items-center">
@@ -116,12 +120,11 @@
                     <span class="badge bg-warning text-dark">Ожидает ответа</span>
                   </td>
                   <td>
-                    <% friendship = Friendship.find_by(user_id: current_user.id, friend_id: user.id) %>
-                    <%= friendship ? time_ago_in_words(friendship.created_at) + " назад" : "—" %>
+                    <%= time_ago_in_words(friendship.created_at) %> назад
                   </td>
                   <td>
                     <%= link_to "Отменить", 
-                          friendship_path(user), 
+                          friendship_path(friendship), 
                           method: :delete,
                           data: { confirm: "Отменить заявку пользователю #{user.email}?" },
                           class: "btn btn-outline-danger btn-sm" %>

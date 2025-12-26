@@ -94,14 +94,23 @@ Rails.application.routes.draw do
     collection do
       get :pending
       get :suggestions
+      delete :cancel_request    
     end
 
     member do
       patch :accept
       patch :reject
+      delete :cancel
     end
   end
+  
+  # УБРАТЬ эти строки - они уже созданы выше в блоке member
+  # patch 'friendships/:id/accept', to: 'friendships#accept', as: :accept_friendship
+  # patch 'friendships/:id/reject', to: 'friendships#reject', as: :reject_friendship
 
+  get 'friends', to: 'friendships#index', as: :friends
+  get 'friends/pending', to: 'friendships#pending', as: :pending_friends
+  
   # -------------------------
   # Аналитика
   # -------------------------

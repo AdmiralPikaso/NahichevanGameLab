@@ -1,0 +1,232 @@
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Предложения друзей</h1>
+    <div>
+      <%= link_to "Мои друзья", friendships_path, class: "btn btn-outline-primary me-2" %>
+      <%= link_to "Заявки в друзья", pending_friendships_path, class: "btn btn-warning" %>
+    </div>
+  </div>
+  
+  <!-- Упрощенный поиск -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <p class="text-muted mb-3">Введите email пользователя для поиска</p>
+      <%= form_tag suggestions_friendships_path, method: :get, class: "row g-2" do %>
+        <div class="col-md-10">
+          <%= text_field_tag :search, params[:search], 
+                placeholder: "Введите email пользователя...", 
+                class: "form-control" %>
+        </div>
+        <div class="col-md-2">
+          <%= submit_tag "Найти", class: "btn btn-primary w-100" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Список предложений -->
+  <div class="card">
+    <div class="card-header">
+      <h5 class="mb-0">Рекомендуемые пользователи</h5>
+    </div>
+    
+    <div class="card-body">
+      <% if @suggestions.any? %>
+        <div class="row">
+          <% @suggestions.each do |user| %>
+            <div class="col-md-6 mb-3">
+              <div class="card h-100">
+                <div class="card-body">
+                  <!-- Аватар и основная информация -->
+                  <div class="d-flex align-items-start mb-3">
+                    <div class="flex-shrink-0">
+                      <% if user.profile&.avatar&.attached? %>
+                        <%= image_tag user.profile.avatar.variant(resize: "70x70"), class: "rounded-circle" %>
+                      <% else %>
+                        <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width: 70px; height: 70px;">
+                          <span class="text-white h4"><%= user.email[0].upcase %></span>
+                        </div>
+                      <% end %>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                      <h5 class="mb-1"><%= user.email.split('@').first %></h5>
+                      <p class="text-muted mb-2">
+                        <small><%= user.email %></small>
+                      </p>
+                      <% if user.profile&.bio.present? %>
+                        <p class="mb-2">
+                          <small><%= truncate(user.profile.bio, length: 60) %></small>
+                        </p>
+                      <% end %>
+                      
+                      <!-- Информация о профиле -->
+                      <div class="d-flex flex-wrap gap-2 mt-2">
+                        <% if user.profile&.bio.present? %>
+                          <span class="badge bg-info">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Есть описание
+                          </span>
+                        <% end %>
+                        <% if user.profile&.avatar&.attached? %>
+                          <span class="badge bg-success">
+                            <i class="fas fa-camera me-1"></i>
+                            Есть аватар
+                          </span>
+                        <% end %>
+                        <% if user.reviews.any? %>
+                          <span class="badge bg-primary">
+                            <i class="fas fa-star me-1"></i>
+                            <%= user.reviews.count %> отзывов
+                          </span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Простая статистика -->
+                  <div class="row text-center small mb-3">
+                    <div class="col-4">
+                      <div class="fw-bold"><%= user.collections.count %></div>
+                      <div class="text-muted">Коллекций</div>
+                    </div>
+                    <div class="col-4">
+                      <div class="fw-bold"><%= user.reviews.count %></div>
+                      <div class="text-muted">Отзывов</div>
+                    </div>
+                    <div class="col-4">
+                      <div class="fw-bold"><%= user.friends.count %></div>
+                      <div class="text-muted">Друзей</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Кнопки действий -->
+                  <div class="d-grid gap-2">
+                    <% 
+                      # Проверяем статус дружбы простым способом
+                      friendship = Friendship.where(
+                        "(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+                        current_user.id, user.id, user.id, current_user.id
+                      ).first
+                      
+                      if friendship.nil?
+                        # Нет дружбы - можно отправить заявку
+                    %>
+                      <%= link_to "Добавить в друзья", 
+                            friendships_path(friend_id: user.id), 
+                            method: :post,
+                            class: "btn btn-success btn-sm" %>
+                    <% elsif friendship.status == 'pending' %>
+                      <% if friendship.user_id == current_user.id %>
+                        <button class="btn btn-warning btn-sm" disabled>
+                          <i class="fas fa-clock me-1"></i>Заявка отправлена
+                        </button>
+                      <% else %>
+                        <!-- ИСПРАВЛЕНО: используем friendship_path с методом patch -->
+                        <%= link_to "Принять заявку", 
+                              friendship_path(friendship), 
+                              method: :patch,
+                              data: { confirm: "Принять заявку в друзья от #{user.email}?" },
+                              class: "btn btn-success btn-sm" %>
+                      <% end %>
+                    <% elsif friendship.status == 'accepted' %>
+                      <button class="btn btn-secondary btn-sm" disabled>
+                        <i class="fas fa-check me-1"></i>Уже друзья
+                      </button>
+                    <% end %>
+                    
+                    <% if user.profile %>
+                      <%= link_to "Посмотреть профиль", profile_path(user), class: "btn btn-outline-primary btn-sm" %>
+                    <% else %>
+                      <button class="btn btn-outline-secondary btn-sm" disabled>
+                        Профиль недоступен
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                  <small class="text-muted">
+                    На сайте с <%= time_ago_in_words(user.created_at) %>
+                  </small>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        
+        <!-- Простая пагинация -->
+        <% if @suggestions.length > 20 %>
+          <div class="mt-4 text-center">
+            <p class="text-muted">Показано <%= @suggestions.length %> из многих пользователей</p>
+          </div>
+        <% end %>
+        
+      <% else %>
+        <div class="text-center py-5">
+          <div class="mb-4">
+            <i class="fas fa-user-plus fa-4x text-muted"></i>
+          </div>
+          <h4>Нет пользователей для добавления</h4>
+          <p class="text-muted mb-4">
+            Вы уже отправили заявки всем пользователям или они уже ваши друзья.
+          </p>
+          <div class="d-flex justify-content-center gap-3">
+            <%= link_to "Все пользователи", profiles_path, class: "btn btn-primary" %>
+            <%= link_to "Мои друзья", friendships_path, class: "btn btn-outline-primary" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+  
+  <!-- Простые рекомендации -->
+  <% if @suggestions.any? && @suggestions.count > 10 %>
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-star me-2"></i>Недавно зарегистрированные
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <% @suggestions.first(4).each do |user| %>
+            <div class="col-md-3 mb-3">
+              <div class="card text-center">
+                <div class="card-body">
+                  <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 60px; height: 60px;">
+                    <span class="text-white h5"><%= user.email[0].upcase %></span>
+                  </div>
+                  <h6 class="mb-1"><%= truncate(user.email.split('@').first, length: 15) %></h6>
+                  <small class="text-muted">Новый пользователь</small>
+                  <div class="mt-3">
+                    <% 
+                      # Проверяем статус для этой карточки тоже
+                      friendship_simple = Friendship.where(
+                        "(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+                        current_user.id, user.id, user.id, current_user.id
+                      ).first
+                    %>
+                    
+                    <% if friendship_simple.nil? %>
+                      <%= link_to "Добавить", 
+                            friendships_path(friend_id: user.id), 
+                            method: :post,
+                            class: "btn btn-success btn-sm w-100" %>
+                    <% elsif friendship_simple.status == 'pending' %>
+                      <button class="btn btn-warning btn-sm w-100" disabled>
+                        Заявка отправлена
+                      </button>
+                    <% else %>
+                      <button class="btn btn-secondary btn-sm w-100" disabled>
+                        Уже друзья
+                      </button>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
