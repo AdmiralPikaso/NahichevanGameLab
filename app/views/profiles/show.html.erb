@@ -34,18 +34,67 @@
             <!-- Кнопки действий -->
             <% if @user != current_user %>
               <div class="mt-3">
-                <% case @friendship_status %>
-                <% when :friends %>
+                <% 
+                  # Получаем статус дружбы с помощью метода из модели User
+                  friendship_status = current_user.friendship_status_with(@user)
+                  
+                  if friendship_status == :friends
+                    # Уже друзья - находим запись о дружбе
+                    friendship_record = current_user.friendship_with(@user)
+                %>
                   <span class="badge bg-success mb-2">Друг</span>
-                <% when :request_sent %>
+                  <% if friendship_record %>
+                    <%= button_to "Удалить из друзей", 
+                          friendship_path(friendship_record), 
+                          method: :delete,
+                          data: { confirm: "Удалить #{@user.email} из друзей?" },
+                          class: "btn btn-outline-danger btn-sm w-100 mt-2" %>
+                  <% end %>
+                
+                <% elsif friendship_status == :request_sent %>
+                  <!-- Текущий пользователь отправил заявку -->
+                  <% friendship_record = current_user.friendships.find_by(friend_id: @user.id, status: 'pending') %>
                   <span class="badge bg-warning text-dark mb-2">Заявка отправлена</span>
-                <% when :request_received %>
-                  <span class="badge bg-info mb-2">Ожидает ответа</span>
+                  <% if friendship_record %>
+                    <%= button_to "Отменить заявку", 
+                          friendship_path(friendship_record), 
+                          method: :delete,
+                          data: { confirm: "Отменить заявку пользователю #{@user.email}?" },
+                          class: "btn btn-outline-warning btn-sm w-100 mt-2" %>
+                  <% end %>
+                
+                <% elsif friendship_status == :request_received %>
+                  <!-- Текущий пользователь получил заявку -->
+                  <% friendship_record = current_user.inverse_friendships.find_by(user_id: @user.id, status: 'pending') %>
+                  <span class="badge bg-info mb-2">Заявка получена</span>
+                  <% if friendship_record %>
+                    <div class="d-flex gap-2 mt-2">
+                      <%= button_to "Принять", 
+                            accept_friendship_path(friendship_record), 
+                            method: :patch,
+                            class: "btn btn-success btn-sm flex-fill" %>
+                      <%= button_to "Отклонить", 
+                            reject_friendship_path(friendship_record), 
+                            method: :patch,
+                            data: { confirm: "Отклонить заявку от #{@user.email}?" },
+                            class: "btn btn-danger btn-sm flex-fill" %>
+                    </div>
+                  <% end %>
+                
+                <% elsif friendship_status == :rejected %>
+                  <!-- Заявка была отклонена -->
+                  <span class="badge bg-secondary mb-2">Заявка отклонена</span>
+                
                 <% else %>
-                  <%= link_to "Добавить в друзья",
-                        friendships_path(friend_id: @user.id),
-                        method: :post,
-                        class: "btn btn-primary w-100" %>
+                  <!-- Нет отношений, можно отправить заявку -->
+                  <% if current_user.can_send_friend_request_to?(@user) %>
+                    <%= button_to "Добавить в друзья",
+                          friendships_path(friend_id: @user.id),
+                          method: :post,
+                          class: "btn btn-primary w-100" %>
+                  <% else %>
+                    <span class="badge bg-secondary mb-2">Невозможно отправить заявку</span>
+                  <% end %>
                 <% end %>
               </div>
             <% else %>
@@ -172,8 +221,8 @@
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 Друзей
                 <span class="badge bg-info rounded-pill">
-                  <% if Friendship.table_exists? && @user.respond_to?(:accepted_friends) %>
-                    <%= @user.accepted_friends.count %>
+                  <% if @user.respond_to?(:friend_ids) %>
+                    <%= (@user.friend_ids || []).size %>
                   <% else %>
                     0
                   <% end %>
@@ -190,14 +239,12 @@
     </div>
     
     <div class="mt-3">
-      <!-- Исправленная ссылка: используем :back вместо users_path -->
       <%= link_to "← Назад", :back, class: "btn btn-outline-secondary" %>
     </div>
   <% else %>
     <div class="text-center py-5">
       <h2>Профиль не найден</h2>
       <p class="text-muted">Пользователь не существует или его профиль недоступен.</p>
-      <!-- Исправленная ссылка: используем root_path или :back вместо users_path -->
       <%= link_to "Вернуться на главную", root_path, class: "btn btn-primary" %>
     </div>
   <% end %>

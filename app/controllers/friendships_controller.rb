@@ -2,44 +2,78 @@ class FriendshipsController < ApplicationController
   before_action :authenticate_user!
   
   def index
-    @friends = current_user.accepted_friends.includes(:profile)
+    @friends = current_user.friends.includes(:profile)
     @friends_count = @friends.count
-    @pending_incoming_count = current_user.requested_friends.count
-    @pending_outgoing_count = current_user.pending_friends.count
+    @pending_requests = current_user.pending_sent_requests.count
+    @incoming_requests = current_user.pending_received_requests.count
+  
+    # Добавляем пагинацию только если гем установлен
+    if defined?(Kaminari)
+      @friends = @friends.page(params[:page]).per(20)
+    elsif defined?(WillPaginate)
+      @friends = @friends.paginate(page: params[:page], per_page: 20)
+    end
+  end
+
+  def pending
+    # Вместо использования методов модели, делаем прямые запросы
+    @incoming_requests = Friendship.where(friend_id: current_user.id, status: 'pending').includes(:user)
+    @outgoing_requests = Friendship.where(user_id: current_user.id, status: 'pending').includes(:friend)
   end
   
-  def pending
-    @incoming_requests = current_user.requested_friends.includes(:profile)
-    @outgoing_requests = current_user.pending_friends.includes(:profile)
+  def suggestions
+    # Простой запрос без фильтрации по друзьям
+    @suggestions = User.where.not(id: current_user.id)
+                     .includes(:profile)
+                     .order(created_at: :desc)
+                     .limit(20)
+  
+    # Если есть поисковый запрос, просто фильтруем по email
+    if params[:search].present?
+      search = params[:search].to_s.downcase.strip
+      @suggestions = @suggestions.where("LOWER(email) LIKE ?", "%#{search}%")
+    end
+  
+    # Возвращаем только пользователей, с которыми еще нет дружбы
+    @suggestions = @suggestions.reject do |user|
+      Friendship.where(
+        "(user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)",
+        current_user.id, user.id, user.id, current_user.id
+      ).exists?
+    end
+  
+    # Преобразуем обратно в массив для работы в шаблоне
+    @suggestions = Kaminari.paginate_array(@suggestions).page(params[:page]).per(12) if defined?(Kaminari)
   end
   
   def create
     friend = User.find_by(id: params[:friend_id])
     
     unless friend
-      redirect_back fallback_location: users_path, alert: "Пользователь не найден"
+      redirect_back fallback_location: profiles_path, alert: "Пользователь не найден"
       return
     end
     
     # Проверяем, не отправили ли уже заявку
     if current_user.pending_request_to?(friend)
-      redirect_back fallback_location: users_path, alert: "Вы уже отправили заявку этому пользователю"
+      redirect_back fallback_location: profiles_path, alert: "Вы уже отправили заявку этому пользователю"
       return
     end
     
     # Проверяем, не друзья ли уже
-    if current_user.friend_with?(friend)
-      redirect_back fallback_location: users_path, alert: "Вы уже друзья с этим пользователем"
+    if current_user.friends_with?(friend)
+      redirect_back fallback_location: profiles_path, alert: "Вы уже друзья с этим пользователем"
       return
     end
     
     # Проверяем, не отправил ли уже заявку этот пользователь
     if current_user.pending_request_from?(friend)
+      # Автоматически принимаем заявку
       friendship = Friendship.find_by(user_id: friend.id, friend_id: current_user.id, status: 'pending')
       if friendship&.update(status: 'accepted')
-        redirect_back fallback_location: users_path, notice: "Вы теперь друзья с #{friend.email}!"
+        redirect_back fallback_location: profiles_path, notice: "Вы теперь друзья с #{friend.email}!"
       else
-        redirect_back fallback_location: users_path, alert: "Ошибка при принятии заявки"
+        redirect_back fallback_location: profiles_path, alert: "Ошибка при принятии заявки"
       end
       return
     end
@@ -48,28 +82,39 @@ class FriendshipsController < ApplicationController
     friendship = current_user.friendships.new(friend: friend, status: 'pending')
     
     if friendship.save
-      redirect_back fallback_location: users_path, notice: "Заявка в друзья отправлена пользователю #{friend.email}"
+      redirect_back fallback_location: profiles_path, notice: "Заявка в друзья отправлена пользователю #{friend.email}"
     else
-      redirect_back fallback_location: users_path, alert: "Ошибка при отправке заявки"
+      redirect_back fallback_location: profiles_path, alert: "Ошибка при отправке заявки: #{friendship.errors.full_messages.join(', ')}"
     end
   end
   
-  def update
-    friendship = Friendship.find_by(id: params[:id])
-    
+  def accept
+    friendship = current_user.inverse_friendships.find_by(id: params[:id], status: 'pending')
+  
     unless friendship
-      redirect_to friendships_path, alert: "Заявка не найдена"
+      redirect_to pending_friendships_path, alert: "Заявка не найдена"
       return
     end
-    
-    if friendship.friend_id == current_user.id && friendship.pending?
-      if friendship.update(status: 'accepted')
-        redirect_to friendships_path, notice: "Заявка в друзья принята!"
-      else
-        redirect_to pending_friendships_path, alert: "Ошибка при принятии заявки"
-      end
+  
+    if friendship.update(status: 'accepted')
+      redirect_to friendships_path, notice: "Заявка принята!"
     else
-      redirect_to friendships_path, alert: "Невозможно выполнить это действие"
+      redirect_to pending_friendships_path, alert: "Ошибка при принятии заявки"
+    end
+  end
+
+  def reject
+    friendship = current_user.inverse_friendships.find_by(id: params[:id], status: 'pending')
+  
+    unless friendship
+      redirect_to pending_friendships_path, alert: "Заявка не найдена"
+      return
+    end
+  
+    if friendship.update(status: 'rejected')
+      redirect_to pending_friendships_path, notice: "Заявка отклонена"
+    else
+      redirect_to pending_friendships_path, alert: "Ошибка при отклонении заявки"
     end
   end
   
@@ -81,16 +126,16 @@ class FriendshipsController < ApplicationController
       return
     end
     
-    if friendship.user_id == current_user.id || friendship.friend_id == current_user.id
-      friend = friendship.user_id == current_user.id ? friendship.friend : friendship.user
-      
-      if friendship.destroy
-        redirect_back fallback_location: friendships_path, notice: "Дружба с #{friend.email} удалена"
-      else
-        redirect_back fallback_location: friendships_path, alert: "Ошибка при удалении дружбы"
-      end
-    else
+    # Проверяем, что текущий пользователь является участником дружбы
+    unless friendship.user_id == current_user.id || friendship.friend_id == current_user.id
       redirect_to friendships_path, alert: "У вас нет прав для этого действия"
+      return
+    end
+    
+    if friendship.destroy
+      redirect_back fallback_location: friendships_path, notice: "Дружба удалена"
+    else
+      redirect_back fallback_location: friendships_path, alert: "Ошибка при удалении дружбы"
     end
   end
   
