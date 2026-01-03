@@ -7,7 +7,7 @@ ruby "3.4.8"
 # Основные гемы
 gem "rails", "~> 8.1.1"
 gem "propshaft"
-gem "pg", "~> 1.1"
+gem "pg", "~> 1.6"
 gem "puma", ">= 5.0"
 gem "importmap-rails"
 gem "turbo-rails"
